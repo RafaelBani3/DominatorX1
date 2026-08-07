@@ -7,7 +7,7 @@ import { onboardingSchema } from "@/lib/validations/onboarding";
 import { format, differenceInYears } from "date-fns";
 import { id } from "date-fns/locale";
 import { Loader2, CheckCircle2, Trophy, Shield, Gamepad2, AlertCircle, CalendarIcon } from "lucide-react";
-import * as motion from "framer-motion/client";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +38,7 @@ export default function MultiStepForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [rejectionReason, setRejectionReason] = useState(null);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   
   const { toast } = useToast();
 
@@ -263,43 +264,47 @@ export default function MultiStepForm({
       </div>
 
       <div className={cn(embedded ? "min-h-[280px]" : "min-h-[400px]")}>
-        <motion.div
-          key={currentStep}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.4, type: "spring", bounce: 0.2 }}
-        >
-          {/* STEP 1 */}
-          {currentStep === 1 && (
-            <div className="space-y-8">
-              <div>
-                <h3 className="text-3xl font-extrabold mb-3 text-foreground tracking-tight">Kapan Anda Lahir?</h3>
-                <p className="text-muted-foreground text-md mb-8">Kami perlu memastikan Anda memenuhi syarat umur minimum untuk bergabung.</p>
-                <Popover>
-                  <PopoverTrigger
-                    className={cn(
-                      "inline-flex items-center justify-start whitespace-nowrap font-normal h-14 bg-background border border-border text-md shadow-sm rounded-xl hover:bg-muted px-4 w-full transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
-                      !values.birthDate && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-5 w-5" />
-                    {values.birthDate ? format(values.birthDate, "dd MMMM yyyy", { locale: id }) : <span>Pilih tanggal</span>}
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={values.birthDate}
-                      onSelect={(date) => setValue("birthDate", date)}
-                      disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
-                      initialFocus
-                      captionLayout="dropdown"
-                      fromYear={1950}
-                      toYear={new Date().getFullYear()}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentStep}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3, type: "spring", bounce: 0.1 }}
+          >
+            {/* STEP 1 */}
+            {currentStep === 1 && (
+              <div className="space-y-8">
+                <div>
+                  <h3 className="text-3xl font-extrabold mb-3 text-foreground tracking-tight">Kapan Anda Lahir?</h3>
+                  <p className="text-muted-foreground text-md mb-8">Kami perlu memastikan Anda memenuhi syarat umur minimum untuk bergabung.</p>
+                  <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                    <PopoverTrigger
+                      className={cn(
+                        "inline-flex items-center justify-start whitespace-nowrap font-normal h-14 bg-background border border-border text-md shadow-sm rounded-xl hover:bg-muted px-4 w-full transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+                        !values.birthDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-5 w-5" />
+                      {values.birthDate ? format(values.birthDate, "dd MMMM yyyy", { locale: id }) : <span>Pilih tanggal</span>}
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={values.birthDate}
+                        onSelect={(date) => {
+                          setValue("birthDate", date);
+                          setIsCalendarOpen(false);
+                        }}
+                        disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                        initialFocus
+                        captionLayout="dropdown"
+                        fromYear={1950}
+                        toYear={new Date().getFullYear()}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
 
               {showParentQuestions && (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8 pt-6 border-t border-border">
@@ -544,7 +549,8 @@ export default function MultiStepForm({
               </div>
             </div>
           )}
-        </motion.div>
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       <div className="mt-8 flex items-center justify-between border-t border-border pt-6">
