@@ -1,0 +1,590 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { onboardingSchema } from "@/lib/validations/onboarding";
+import { format, differenceInYears } from "date-fns";
+import { id } from "date-fns/locale";
+import { Loader2, CheckCircle2, Trophy, Shield, Gamepad2, AlertCircle, CalendarIcon } from "lucide-react";
+import * as motion from "framer-motion/client";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Progress } from "@/components/ui/progress";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { submitOnboarding } from "@/lib/actions/onboarding";
+import { useToast } from "@/hooks/use-toast";
+
+const STEPS = [
+  { id: 1, title: "Verifikasi Umur", icon: <Shield className="w-5 h-5" /> },
+  { id: 2, title: "Data Diri", icon: <Gamepad2 className="w-5 h-5" /> },
+  { id: 3, title: "Kemampuan", icon: <Trophy className="w-5 h-5" /> },
+  { id: 4, title: "Persyaratan", icon: <CheckCircle2 className="w-5 h-5" /> },
+  { id: 5, title: "Review", icon: <AlertCircle className="w-5 h-5" /> },
+];
+
+export default function MultiStepForm({
+  settings = {},
+  embedded = false,
+  onCancel,
+}) {
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState(null);
+  
+  const { toast } = useToast();
+
+  const handleCancel = () => {
+    if (onCancel) onCancel();
+    else window.location.href = "/";
+  };
+
+  const buildWhatsAppAdminUrl = (data) => {
+    const ageYears = data.birthDate
+      ? differenceInYears(new Date(), data.birthDate)
+      : "-";
+    const asal = [data.city, data.province].filter(Boolean).join(", ") || "-";
+    const vsa =
+      data.canScore30 === "ya"
+        ? "YA"
+        : data.canScore30 === "tidak"
+          ? "TIDAK"
+          : "-";
+
+    const message = [
+      "Data Member Baru",
+      `Nama : ${data.fullName || "-"}`,
+      `Umur : ${ageYears}`,
+      `Asal : ${asal}`,
+      `NICKNAME : ${data.fcMobileNickname || "-"}`,
+      `OVR : ${data.ovr ?? "-"}`,
+      `BISA VSA GA : ${vsa}`,
+    ].join("\n");
+
+    return `https://wa.me/6281211819061?text=${encodeURIComponent(message)}`;
+  };
+
+  const form = useForm({
+    resolver: zodResolver(onboardingSchema),
+    defaultValues: {
+      phoneOwner: "",
+      phoneChecked: "",
+      warningAccept: false,
+      socialTikTok: false,
+      socialInstagram: false,
+      socialYouTube: false,
+      socialWhatsappChannel: false,
+      canScore30: "",
+    },
+    mode: "onChange",
+  });
+
+  const { watch, setValue, formState: { errors } } = form;
+  const values = watch();
+
+  // Instant rejection logic
+  useEffect(() => {
+    if (values.phoneOwner === "orang_tua") {
+      setRejectionReason("Mohon maaf. Saat ini Anda belum dapat bergabung ke komunitas Dominator XI karena alasan Parent Permission (Handphone milik orang tua). Terima kasih.");
+      submitOnboarding({ ...values, status: "rejected", reason: "Parent Permission - Not Owned" });
+    }
+  }, [values.phoneOwner]);
+
+  useEffect(() => {
+    if (values.phoneChecked === "ya") {
+      setRejectionReason("Mohon maaf. Saat ini Anda belum dapat bergabung ke komunitas Dominator XI karena alasan Parent Permission (Handphone sering diperiksa orang tua). Terima kasih.");
+      submitOnboarding({ ...values, status: "rejected", reason: "Parent Permission - Monitored" });
+    }
+  }, [values.phoneChecked]);
+
+  const handleNext = () => {
+    if (currentStep === 1) {
+      if (!values.birthDate) {
+        toast({ title: "Perhatian", description: "Pilih tanggal lahir Anda secara lengkap", variant: "destructive" });
+        return;
+      }
+      const age = differenceInYears(new Date(), values.birthDate);
+      if (age < 15) {
+        if (!values.phoneOwner) {
+          toast({ title: "Perhatian", description: "Pilih kepemilikan handphone", variant: "destructive" });
+          return;
+        }
+        if (values.phoneOwner === "sendiri") {
+          if (!values.phoneChecked) {
+            toast({ title: "Perhatian", description: "Pilih intensitas pemeriksaan", variant: "destructive" });
+            return;
+          }
+          if (values.phoneChecked === "terkadang" && !values.warningAccept) {
+            toast({ title: "Perhatian", description: "Anda harus menyetujui disclaimer", variant: "destructive" });
+            return;
+          }
+        }
+      }
+    }
+    
+    if (currentStep === 2) {
+      if (!values.fullName || !values.province || !values.city || !values.fcMobileNickname || !values.ovr) {
+        toast({ title: "Perhatian", description: "Lengkapi semua data diri", variant: "destructive" });
+        return;
+      }
+    }
+
+    if (currentStep === 3) {
+      if (!values.canScore30) {
+        toast({ title: "Perhatian", description: "Pilih salah satu jawaban", variant: "destructive" });
+        return;
+      }
+    }
+    
+    if (currentStep === 4) {
+      if (!values.socialTikTok || !values.socialInstagram || !values.socialYouTube || !values.socialWhatsappChannel) {
+        toast({ title: "Perhatian", description: "Anda wajib mengunjungi semua sosial media kami", variant: "destructive" });
+        return;
+      }
+    }
+
+    setCurrentStep((prev) => prev + 1);
+  };
+
+  const handleBack = () => {
+    setCurrentStep((prev) => prev - 1);
+  };
+
+  const onSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      const res = await submitOnboarding({ ...values, status: "accepted" });
+      if (res.success) {
+        const waUrl = buildWhatsAppAdminUrl(values);
+        window.open(waUrl, "_blank", "noopener,noreferrer");
+        setIsSuccess(true);
+      } else {
+        toast({ title: "Error", description: res.error || "Terjadi kesalahan", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Gagal memproses pendaftaran", variant: "destructive" });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (rejectionReason) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className={cn(
+          "mx-auto max-w-lg rounded-3xl p-8 text-center shadow-xl",
+          embedded ? "bg-white" : "glass-panel"
+        )}
+      >
+        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+          <AlertCircle className="h-10 w-10" />
+        </div>
+        <h2 className="mb-4 text-3xl font-extrabold text-foreground">Pendaftaran Ditolak</h2>
+        <p className="mb-8 text-lg text-muted-foreground">{rejectionReason}</p>
+        <Button onClick={handleCancel} className="w-full rounded-xl px-8 py-6 text-lg font-bold">
+          Tutup
+        </Button>
+      </motion.div>
+    );
+  }
+
+  if (isSuccess) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className={cn(
+          "relative mx-auto max-w-lg overflow-hidden rounded-3xl border border-primary/20 p-10 text-center shadow-2xl",
+          embedded ? "bg-white" : "glass-panel"
+        )}
+      >
+        <div className="pointer-events-none absolute top-0 right-0 -mt-20 -mr-20 h-64 w-64 rounded-full bg-primary/10 blur-[100px]" />
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: "spring", delay: 0.2 }}
+          className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-primary/10 text-primary shadow-inner"
+        >
+          <CheckCircle2 className="h-12 w-12" />
+        </motion.div>
+        <h2 className="mb-4 text-4xl font-extrabold text-foreground">Selamat!</h2>
+        <p className="mb-8 text-lg text-muted-foreground">
+          Pendaftaran berhasil. Silakan bergabung ke WhatsApp Group untuk informasi lebih lanjut.
+        </p>
+        <Button
+          asChild
+          size="lg"
+          className="w-full cursor-pointer rounded-xl px-8 py-6 text-lg font-bold"
+        >
+          <a
+            href="https://chat.whatsapp.com/FkZf7UL7HQ0E768p3eB2DM"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Gabung WhatsApp Group
+          </a>
+        </Button>
+      </motion.div>
+    );
+  }
+
+  const age = values.birthDate ? differenceInYears(new Date(), values.birthDate) : null;
+  const showParentQuestions = age !== null && age < 15;
+
+  return (
+    <div
+      className={cn(
+        "relative mx-auto max-w-3xl overflow-hidden",
+        embedded
+          ? "rounded-2xl bg-white p-1 md:p-2"
+          : "glass-panel rounded-3xl bg-card p-6 shadow-xl md:p-10"
+      )}
+    >
+      <div className={cn("mb-8", embedded && "mb-6")}>
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-3 text-primary">
+            {STEPS[currentStep - 1]?.icon}
+            <span className="text-lg font-bold">Langkah {currentStep} dari 5</span>
+          </div>
+          <span className="rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
+            {STEPS[currentStep - 1]?.title}
+          </span>
+        </div>
+        <Progress value={(currentStep / 5) * 100} className="h-2.5 bg-secondary" />
+      </div>
+
+      <div className={cn(embedded ? "min-h-[280px]" : "min-h-[400px]")}>
+        <motion.div
+          key={currentStep}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.4, type: "spring", bounce: 0.2 }}
+        >
+          {/* STEP 1 */}
+          {currentStep === 1 && (
+            <div className="space-y-8">
+              <div>
+                <h3 className="text-3xl font-extrabold mb-3 text-foreground tracking-tight">Kapan Anda Lahir?</h3>
+                <p className="text-muted-foreground text-md mb-8">Kami perlu memastikan Anda memenuhi syarat umur minimum untuk bergabung.</p>
+                <Popover>
+                  <PopoverTrigger
+                    className={cn(
+                      "inline-flex items-center justify-start whitespace-nowrap font-normal h-14 bg-background border border-border text-md shadow-sm rounded-xl hover:bg-muted px-4 w-full transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+                      !values.birthDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-5 w-5" />
+                    {values.birthDate ? format(values.birthDate, "dd MMMM yyyy", { locale: id }) : <span>Pilih tanggal</span>}
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={values.birthDate}
+                      onSelect={(date) => setValue("birthDate", date)}
+                      disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                      initialFocus
+                      captionLayout="dropdown"
+                      fromYear={1950}
+                      toYear={new Date().getFullYear()}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {showParentQuestions && (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8 pt-6 border-t border-border">
+                  <div className="bg-primary/5 p-6 rounded-2xl border border-primary/10">
+                    <Label className="mb-4 block text-lg font-bold text-foreground">Apakah handphone yang digunakan saat ini merupakan:</Label>
+                    <RadioGroup onValueChange={(val) => setValue("phoneOwner", val)} value={values.phoneOwner} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="relative group">
+                        <RadioGroupItem value="sendiri" id="p-sendiri" className="sr-only" />
+                        <Label htmlFor="p-sendiri" className="flex items-center space-x-3 bg-background p-4 rounded-xl border border-border cursor-pointer hover:border-primary/50 transition-all group-has-checked:bg-primary/10 group-has-checked:border-primary shadow-sm">
+                          <div className="h-5 w-5 rounded-full border border-primary flex items-center justify-center">
+                            {values.phoneOwner === "sendiri" && <div className="h-2.5 w-2.5 bg-primary rounded-full" />}
+                          </div>
+                          <span className="flex-1 font-medium text-md">Milik saya sendiri</span>
+                        </Label>
+                      </div>
+                      <div className="relative group">
+                        <RadioGroupItem value="orang_tua" id="p-ortu" className="sr-only" />
+                        <Label htmlFor="p-ortu" className="flex items-center space-x-3 bg-background p-4 rounded-xl border border-border cursor-pointer hover:border-primary/50 transition-all group-has-checked:bg-primary/10 group-has-checked:border-primary shadow-sm">
+                          <div className="h-5 w-5 rounded-full border border-primary flex items-center justify-center">
+                            {values.phoneOwner === "orang_tua" && <div className="h-2.5 w-2.5 bg-primary rounded-full" />}
+                          </div>
+                          <span className="flex-1 font-medium text-md">Milik orang tua</span>
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  {values.phoneOwner === "sendiri" && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-primary/5 p-6 rounded-2xl border border-primary/10">
+                      <Label className="mb-4 block text-lg font-bold text-foreground">Apakah handphone Anda sering diperiksa atau masih dikontrol oleh orang tua?</Label>
+                      <RadioGroup onValueChange={(val) => setValue("phoneChecked", val)} value={values.phoneChecked} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="relative group">
+                          <RadioGroupItem value="ya" id="c-ya" className="sr-only" />
+                          <Label htmlFor="c-ya" className="flex items-center space-x-3 bg-background p-4 rounded-xl border border-border cursor-pointer hover:border-primary/50 transition-all group-has-checked:bg-primary/10 group-has-checked:border-primary shadow-sm">
+                            <div className="h-5 w-5 rounded-full border border-primary flex items-center justify-center">
+                              {values.phoneChecked === "ya" && <div className="h-2.5 w-2.5 bg-primary rounded-full" />}
+                            </div>
+                            <span className="flex-1 font-medium text-md">Ya</span>
+                          </Label>
+                        </div>
+                        <div className="relative group">
+                          <RadioGroupItem value="tidak" id="c-tidak" className="sr-only" />
+                          <Label htmlFor="c-tidak" className="flex items-center space-x-3 bg-background p-4 rounded-xl border border-border cursor-pointer hover:border-primary/50 transition-all group-has-checked:bg-primary/10 group-has-checked:border-primary shadow-sm">
+                            <div className="h-5 w-5 rounded-full border border-primary flex items-center justify-center">
+                              {values.phoneChecked === "tidak" && <div className="h-2.5 w-2.5 bg-primary rounded-full" />}
+                            </div>
+                            <span className="flex-1 font-medium text-md">Tidak</span>
+                          </Label>
+                        </div>
+                        <div className="relative group">
+                          <RadioGroupItem value="terkadang" id="c-terkadang" className="sr-only" />
+                          <Label htmlFor="c-terkadang" className="flex items-center space-x-3 bg-background p-4 rounded-xl border border-border cursor-pointer hover:border-primary/50 transition-all group-has-checked:bg-primary/10 group-has-checked:border-primary shadow-sm">
+                            <div className="h-5 w-5 rounded-full border border-primary flex items-center justify-center">
+                              {values.phoneChecked === "terkadang" && <div className="h-2.5 w-2.5 bg-primary rounded-full" />}
+                            </div>
+                            <span className="flex-1 font-medium text-md">Terkadang</span>
+                          </Label>
+                        </div>
+                      </RadioGroup>
+                    </motion.div>
+                  )}
+
+                  {values.phoneOwner === "sendiri" && values.phoneChecked === "terkadang" && (
+                    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-yellow-500/10 border border-yellow-500/20 p-5 rounded-2xl mt-4 text-yellow-800 dark:text-yellow-200">
+                      <p className="text-sm mb-4 leading-relaxed font-medium">
+                        Saya memahami bahwa keputusan bergabung ke komunitas ini merupakan keputusan pribadi saya.
+                        Apabila di kemudian hari terjadi kesalahpahaman dengan orang tua maupun wali, maka hal tersebut bukan menjadi tanggung jawab admin maupun komunitas.
+                      </p>
+                      <Label htmlFor="warning" className="flex items-center space-x-3 cursor-pointer p-2 -ml-2 rounded-lg hover:bg-yellow-500/10 transition-colors">
+                        <Checkbox 
+                          id="warning" 
+                          checked={values.warningAccept} 
+                          onCheckedChange={(val) => setValue("warningAccept", val)}
+                          className="h-6 w-6 border-yellow-500/50 data-[state=checked]:bg-yellow-500 data-[state=checked]:text-white"
+                        />
+                        <span className="text-md font-bold">Saya memahami dan menyetujui.</span>
+                      </Label>
+                    </motion.div>
+                  )}
+                </motion.div>
+              )}
+            </div>
+          )}
+
+          {/* STEP 2 */}
+          {currentStep === 2 && (
+            <div className="space-y-6">
+              <h3 className="text-3xl font-extrabold mb-8 text-foreground tracking-tight">Data Diri & In-Game</h3>
+              
+              <div className="space-y-3">
+                <Label className="font-semibold text-muted-foreground">Nama Lengkap</Label>
+                <Input className="h-14 bg-background border-border rounded-xl text-md shadow-sm" placeholder="Masukkan nama lengkap Anda" value={values.fullName || ""} onChange={(e) => setValue("fullName", e.target.value)} />
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <Label className="font-semibold text-muted-foreground">Provinsi</Label>
+                  <Input className="h-14 bg-background border-border rounded-xl text-md shadow-sm" placeholder="Misal: Jawa Barat" value={values.province || ""} onChange={(e) => setValue("province", e.target.value)} />
+                </div>
+                <div className="space-y-3">
+                  <Label className="font-semibold text-muted-foreground">Kota / Kabupaten</Label>
+                  <Input className="h-14 bg-background border-border rounded-xl text-md shadow-sm" placeholder="Misal: Bandung" value={values.city || ""} onChange={(e) => setValue("city", e.target.value)} />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-border">
+                <div className="md:col-span-2 space-y-3">
+                  <Label className="font-semibold text-muted-foreground">Nickname FC Mobile</Label>
+                  <Input className="h-14 bg-background border-border rounded-xl text-md shadow-sm" placeholder="Nickname in-game" value={values.fcMobileNickname || ""} onChange={(e) => setValue("fcMobileNickname", e.target.value)} />
+                </div>
+                <div className="space-y-3">
+                  <Label className="font-semibold text-muted-foreground">OVR</Label>
+                  <Input type="number" className="h-14 bg-background border-border rounded-xl text-md shadow-sm" placeholder="Misal: 105" value={values.ovr || ""} onChange={(e) => setValue("ovr", parseInt(e.target.value) || "")} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 3 */}
+          {currentStep === 3 && (
+            <div className="space-y-8">
+              <h3 className="text-3xl font-extrabold mb-3 text-foreground tracking-tight">Kemampuan Bermain</h3>
+              <p className="text-muted-foreground text-md mb-8">Jawab dengan jujur untuk memudahkan penempatan divisi Anda di komunitas.</p>
+              
+              <div className="bg-primary/5 p-8 rounded-3xl border border-primary/10">
+                <Label className="text-xl font-bold leading-relaxed mb-8 block text-center text-foreground">Apakah Anda mampu bermain VSA / Head to Head dengan rata-rata lebih dari 30 gol?</Label>
+                <RadioGroup onValueChange={(val) => setValue("canScore30", val)} value={values.canScore30} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="relative group">
+                    <RadioGroupItem value="ya" id="score-ya" className="sr-only" />
+                    <Label htmlFor="score-ya" className="flex h-32 items-center justify-center bg-background rounded-2xl border-2 border-border cursor-pointer hover:border-primary/50 transition-all group-has-checked:bg-primary group-has-checked:border-primary shadow-sm w-full">
+                      <span className="font-extrabold text-3xl group-has-checked:text-white text-foreground">YA</span>
+                    </Label>
+                  </motion.div>
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="relative group">
+                    <RadioGroupItem value="tidak" id="score-tidak" className="sr-only" />
+                    <Label htmlFor="score-tidak" className="flex h-32 items-center justify-center bg-background rounded-2xl border-2 border-border cursor-pointer hover:border-destructive/50 transition-all group-has-checked:bg-destructive group-has-checked:border-destructive shadow-sm w-full">
+                      <span className="font-extrabold text-3xl group-has-checked:text-white text-foreground">TIDAK</span>
+                    </Label>
+                  </motion.div>
+                </RadioGroup>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 4 */}
+          {currentStep === 4 && (
+            <div className="space-y-8">
+              <h3 className="text-3xl font-extrabold mb-3 text-foreground tracking-tight">Persyaratan Bergabung</h3>
+              <p className="text-muted-foreground text-md mb-8">Tunjukkan dukungan Anda dengan mengikuti kanal sosial media resmi kami.</p>
+              
+              <div className="space-y-5">
+                <motion.div whileHover={{ scale: 1.01 }}>
+                  <Button 
+                    type="button"
+                    variant={values.socialTikTok ? "outline" : "default"}
+                    className={cn("w-full h-16 justify-between rounded-2xl text-lg shadow-sm border-2 cursor-pointer", values.socialTikTok ? "bg-background border-border text-muted-foreground" : "border-transparent bg-primary text-primary-foreground hover:bg-primary/90")}
+                    onClick={() => {
+                      window.open("https://www.tiktok.com/@dominator_fcm/photo/7667739169640172821?is_from_webapp=1&sender_device=pc&web_id=7662197260352931345", "_blank");
+                      setValue("socialTikTok", true);
+                    }}
+                  >
+                    <span className="flex items-center"><span className="font-bold">Follow TikTok</span></span>
+                    {values.socialTikTok ? <CheckCircle2 className="h-7 w-7 text-green-500" /> : "Kunjungi"}
+                  </Button>
+                </motion.div>
+
+                <motion.div whileHover={{ scale: 1.01 }}>
+                  <Button 
+                    type="button"
+                    variant={values.socialInstagram ? "outline" : "default"}
+                    className={cn("w-full h-16 justify-between rounded-2xl text-lg shadow-sm border-2 cursor-pointer", values.socialInstagram ? "bg-background border-border text-muted-foreground" : "border-transparent bg-primary text-primary-foreground hover:bg-primary/90")}
+                    onClick={() => {
+                      window.open("https://www.instagram.com/p/DacuC5Ay7cp/", "_blank");
+                      setValue("socialInstagram", true);
+                    }}
+                  >
+                    <span className="flex items-center"><span className="font-bold">Follow Instagram</span></span>
+                    {values.socialInstagram ? <CheckCircle2 className="h-7 w-7 text-green-500" /> : "Kunjungi"}
+                  </Button>
+                </motion.div>
+
+                <motion.div whileHover={{ scale: 1.01 }}>
+                  <Button 
+                    type="button"
+                    variant={values.socialYouTube ? "outline" : "default"}
+                    className={cn("w-full h-16 justify-between rounded-2xl text-lg shadow-sm border-2 cursor-pointer", values.socialYouTube ? "bg-background border-border text-muted-foreground" : "border-transparent bg-primary text-primary-foreground hover:bg-primary/90")}
+                    onClick={() => {
+                      window.open("https://youtube.com/shorts/QXV6YR6T04U?feature=share", "_blank");
+                      setValue("socialYouTube", true);
+                    }}
+                  >
+                    <span className="flex items-center"><span className="font-bold">Subscribe YouTube</span></span>
+                    {values.socialYouTube ? <CheckCircle2 className="h-7 w-7 text-green-500" /> : "Kunjungi"}
+                  </Button>
+                </motion.div>
+
+                <motion.div whileHover={{ scale: 1.01 }}>
+                  <Button 
+                    type="button"
+                    variant={values.socialWhatsappChannel ? "outline" : "default"}
+                    className={cn("w-full h-16 justify-between rounded-2xl text-lg shadow-sm border-2 cursor-pointer", values.socialWhatsappChannel ? "bg-background border-border text-muted-foreground" : "border-transparent bg-primary text-primary-foreground hover:bg-primary/90")}
+                    onClick={() => {
+                      window.open("https://whatsapp.com/channel/0029Vb5aadbK5cD5YbbVP73Y", "_blank");
+                      setValue("socialWhatsappChannel", true);
+                    }}
+                  >
+                    <span className="flex items-center"><span className="font-bold">Join Saluran WhatsApp</span></span>
+                    {values.socialWhatsappChannel ? <CheckCircle2 className="h-7 w-7 text-green-500" /> : "Kunjungi"}
+                  </Button>
+                </motion.div>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 5 */}
+          {currentStep === 5 && (
+            <div className="space-y-8">
+              <h3 className="text-3xl font-extrabold mb-3 text-foreground tracking-tight">Review Data</h3>
+              <p className="text-muted-foreground text-md mb-8">Pastikan seluruh data pendaftaran Anda sudah akurat sebelum mengirimkannya.</p>
+              
+              <div className="bg-background border border-border shadow-sm rounded-3xl p-8 space-y-6 text-md">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 items-center border-b border-border pb-4">
+                  <span className="text-muted-foreground font-semibold">Nama Lengkap</span>
+                  <span className="sm:col-span-2 font-bold text-lg text-foreground">{values.fullName}</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 items-center border-b border-border pb-4">
+                  <span className="text-muted-foreground font-semibold">Tanggal Lahir & Umur</span>
+                  <span className="sm:col-span-2 font-bold text-lg text-foreground">
+                    {values.birthDate ? `${format(values.birthDate, "dd MMMM yyyy", { locale: id })} (${age} Tahun)` : "-"}
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 items-center border-b border-border pb-4">
+                  <span className="text-muted-foreground font-semibold">Domisili</span>
+                  <span className="sm:col-span-2 font-bold text-lg text-foreground">{values.city}, {values.province}</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 items-center">
+                  <span className="text-muted-foreground font-semibold">Akun Game</span>
+                  <span className="sm:col-span-2 font-bold text-lg text-foreground bg-primary/10 text-primary px-4 py-2 rounded-xl inline-block w-fit">
+                    {values.fcMobileNickname} <span className="opacity-70 mx-1">|</span> OVR {values.ovr}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+        </motion.div>
+      </div>
+
+      <div className="mt-8 flex items-center justify-between border-t border-border pt-6">
+        {currentStep > 1 ? (
+          <Button
+            variant="ghost"
+            size="lg"
+            onClick={handleBack}
+            disabled={isSubmitting}
+            className="rounded-xl text-md font-bold hover:bg-muted"
+          >
+            Kembali
+          </Button>
+        ) : (
+          <Button
+            variant="ghost"
+            size="lg"
+            onClick={handleCancel}
+            className="rounded-xl text-md font-bold text-muted-foreground hover:text-foreground"
+          >
+            Batal
+          </Button>
+        )}
+
+        {currentStep < 5 ? (
+          <Button size="lg" onClick={handleNext} className="rounded-xl px-10 text-md font-bold">
+            Lanjut
+          </Button>
+        ) : (
+          <Button
+            size="lg"
+            onClick={onSubmit}
+            disabled={isSubmitting}
+            className="rounded-xl px-10 text-md font-bold"
+          >
+            {isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
+            Kirim Pendaftaran
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// -------------------------------------
+// Better Auth Core Schema (Admins)
+// -------------------------------------
+
+model User {
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean
+  image         String?
+  createdAt     DateTime
+  updatedAt     DateTime
+  sessions      Session[]
+  accounts      Account[]
+  
+  // Custom permissions and role for Admin
+  role          String?   @default("admin") // "admin" or "superadmin"
+  permissions   String?   // JSON string of permissions like ["read", "write", "delete"]
+  
+  // We can still support username/password through Better Auth plugins
+  // but better auth requires email by default, we can use username as email or add username field.
+  username      String?   @unique
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verification")
+}
+
+// -------------------------------------
+// Dominator XI Specific Models
+// -------------------------------------
+
+model Member {
+  id                 String      @id @default(uuid())
+  fullName           String
+  birthDate          DateTime
+  province           String
+  city               String
+  fcMobileNickname   String
+  ovr                Int
+  status             String      @default("pending") // pending, accepted, rejected
+  reason             String?     // Rejection reason if any (e.g. Parent Permission)
+  warningAccept      Boolean     @default(false)     // True if under 15 and warning accepted
+  joinDate           DateTime    @default(now())
+  
+  screenings         Screening[]
+
+  @@map("members")
+}
+
+model Screening {
+  id        String   @id @default(uuid())
+  memberId  String
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  question  String
+  answer    String
+  createdAt DateTime @default(now())
+
+  @@map("screenings")
+}
+
+model PageVisit {
+  id        String   @id @default(uuid())
+  page      String   @unique
+  count     Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  @@map("page_visits")
+}
+
+model Setting {
+  id    String @id @default(uuid())
+  key   String @unique
+  value String
+
+  @@map("settings")
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  adminId   String
+  action    String
+  target    String?
+  createdAt DateTime @default(now())
+
+  @@map("activity_logs")
+}
