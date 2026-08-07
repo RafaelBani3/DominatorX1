@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -45,31 +46,6 @@ export default function MultiStepForm({
   const handleCancel = () => {
     if (onCancel) onCancel();
     else window.location.href = "/";
-  };
-
-  const buildWhatsAppAdminUrl = (data) => {
-    const ageYears = data.birthDate
-      ? differenceInYears(new Date(), data.birthDate)
-      : "-";
-    const asal = [data.city, data.province].filter(Boolean).join(", ") || "-";
-    const vsa =
-      data.canScore30 === "ya"
-        ? "YA"
-        : data.canScore30 === "tidak"
-          ? "TIDAK"
-          : "-";
-
-    const message = [
-      "Data Member Baru",
-      `Nama : ${data.fullName || "-"}`,
-      `Umur : ${ageYears}`,
-      `Asal : ${asal}`,
-      `NICKNAME : ${data.fcMobileNickname || "-"}`,
-      `OVR : ${data.ovr ?? "-"}`,
-      `BISA VSA GA : ${vsa}`,
-    ].join("\n");
-
-    return `https://wa.me/6281211819061?text=${encodeURIComponent(message)}`;
   };
 
   const form = useForm({
@@ -163,8 +139,6 @@ export default function MultiStepForm({
     try {
       const res = await submitOnboarding({ ...values, status: "accepted" });
       if (res.success) {
-        const waUrl = buildWhatsAppAdminUrl(values);
-        window.open(waUrl, "_blank", "noopener,noreferrer");
         setIsSuccess(true);
       } else {
         toast({ title: "Error", description: res.error || "Terjadi kesalahan", variant: "destructive" });
