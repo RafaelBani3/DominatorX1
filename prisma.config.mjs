@@ -1,13 +1,11 @@
 import { defineConfig } from "@prisma/config";
-import { config as loadEnv } from "dotenv";
+import dotenv from "dotenv";
 
-loadEnv();
+dotenv.config();
 
-// Fallback keeps `prisma generate` working on Vercel even if DATABASE_URL
-// is only available at runtime for some environments.
 const datasourceUrl =
   process.env.DATABASE_URL ||
-  "postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable";
+  "postgresql://postgres:postgres@127.0.0.1:5432/postgres?sslmode=disable";
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
