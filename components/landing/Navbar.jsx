@@ -5,9 +5,11 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { MoreVertical, X } from "lucide-react";
 
 export default function Navbar({ onJoin }) {
   const [scrolled, setScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 16);
@@ -15,6 +17,12 @@ export default function Navbar({ onJoin }) {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  const navLinks = [
+    { href: "#about", label: "Tentang" },
+    { href: "#benefits", label: "Benefit" },
+    { href: "#faq", label: "FAQ" },
+  ];
 
   return (
     <header
@@ -41,12 +49,9 @@ export default function Navbar({ onJoin }) {
           </span>
         </Link>
 
+        {/* Desktop Nav */}
         <nav className="hidden items-center gap-8 md:flex">
-          {[
-            { href: "#about", label: "Tentang" },
-            { href: "#benefits", label: "Benefit" },
-            { href: "#faq", label: "FAQ" },
-          ].map((item) => (
+          {navLinks.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -57,6 +62,7 @@ export default function Navbar({ onJoin }) {
           ))}
         </nav>
 
+        {/* Desktop Buttons & Mobile Toggle */}
         <div className="flex items-center gap-2">
           <Button
             asChild
@@ -67,9 +73,59 @@ export default function Navbar({ onJoin }) {
           </Button>
           <Button
             onClick={onJoin}
-            className="h-9 rounded-lg bg-white px-4 text-sm font-semibold text-foreground hover:bg-white/90"
+            className="hidden h-9 rounded-lg bg-white px-4 text-sm font-semibold text-foreground hover:bg-white/90 md:inline-flex"
           >
             Daftar
+          </Button>
+
+          {/* Mobile Menu Toggle (Three Dots) */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden h-9 w-9 text-white hover:bg-white/10"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <MoreVertical className="h-5 w-5" />}
+          </Button>
+        </div>
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      <div
+        className={cn(
+          "absolute inset-x-0 top-full flex flex-col border-b border-white/10 bg-black/95 px-5 py-6 backdrop-blur-xl transition-all duration-300 ease-in-out md:hidden",
+          isMobileMenuOpen
+            ? "translate-y-0 opacity-100 visible"
+            : "-translate-y-4 opacity-0 invisible"
+        )}
+      >
+        <div className="flex flex-col gap-4">
+          {navLinks.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="text-base font-medium text-white/70 transition-colors hover:text-white"
+            >
+              {item.label}
+            </Link>
+          ))}
+          <div className="my-2 h-px w-full bg-white/10" />
+          <Link
+            href="/admin/login"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="text-base font-medium text-white/70 transition-colors hover:text-white"
+          >
+            Dashboard
+          </Link>
+          <Button
+            onClick={() => {
+              setIsMobileMenuOpen(false);
+              onJoin();
+            }}
+            className="mt-2 h-11 w-full rounded-lg bg-white text-base font-semibold text-foreground hover:bg-white/90"
+          >
+            Daftar Sekarang
           </Button>
         </div>
       </div>
