@@ -135,3 +135,31 @@ model ActivityLog {
 
   @@map("activity_logs")
 }
+
+model TopPlayer {
+  id        String   @id @default(uuid())
+  name      String
+  role      String
+  image     String?
+  stats     String?
+  playstyle String?
+  ovr       Int      @default(0)
+  skillMoves Int     @default(0)
+  weakFoot   Int     @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("top_players")
+}
+
+model Tactic {
+  id        String   @id @default(uuid())
+  formation String   @unique
+  buildUp   String?
+  offense   String?
+  defense   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("tactics")
+}

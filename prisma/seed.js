@@ -96,6 +96,59 @@ async function main() {
     console.log(`  Password : ${ADMIN_PASSWORD}`);
   }
 
+  // Seed Top Players
+  const playersCount = await prisma.topPlayer.count();
+  if (playersCount === 0) {
+    await prisma.topPlayer.createMany({
+      data: [
+        {
+          name: "Ronaldo Nazário",
+          role: "ST",
+          ovr: 97,
+          playstyle: "Poacher",
+          stats: JSON.stringify({ "PAC": 94, "SHO": 95, "PAS": 81, "DRI": 93 }),
+        },
+        {
+          name: "Lionel Messi",
+          role: "RW",
+          ovr: 96,
+          playstyle: "Playmaker",
+          stats: JSON.stringify({ "PAC": 85, "SHO": 93, "PAS": 95, "DRI": 96 }),
+        },
+        {
+          name: "Ruud Gullit",
+          role: "CM",
+          ovr: 97,
+          playstyle: "Box to Box",
+          stats: JSON.stringify({ "PAC": 90, "SHO": 91, "PAS": 92, "DEF": 88 }),
+        }
+      ]
+    });
+    console.log("Seeded 3 Top Players.");
+  }
+
+  // Seed Tactics
+  const tacticsCount = await prisma.tactic.count();
+  if (tacticsCount === 0) {
+    await prisma.tactic.createMany({
+      data: [
+        {
+          formation: "4-3-3 Holding",
+          buildUp: JSON.stringify({ "Speed": 2, "Passing Distance": 1, "Mentality": "Balanced" }),
+          offense: JSON.stringify({ "Passing Rate": 2, "Crossing Rate": 2, "Shooting Tendency": 2, "Positioning": "Organized" }),
+          defense: JSON.stringify({ "Pressure": 2, "Width": 2, "Aggression": 2, "Backline": "Cover" }),
+        },
+        {
+          formation: "4-2-3-1 Wide",
+          buildUp: JSON.stringify({ "Speed": 3, "Passing Distance": 2, "Mentality": "Attacking" }),
+          offense: JSON.stringify({ "Passing Rate": 3, "Crossing Rate": 3, "Shooting Tendency": 3, "Positioning": "Free Form" }),
+          defense: JSON.stringify({ "Pressure": 3, "Width": 1, "Aggression": 3, "Backline": "Offside Trap" }),
+        }
+      ]
+    });
+    console.log("Seeded 2 Tactics.");
+  }
+
   console.log("Seeding completed.");
 }
 

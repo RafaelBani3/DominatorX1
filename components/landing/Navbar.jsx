@@ -19,9 +19,8 @@ export default function Navbar({ onJoin }) {
   }, []);
 
   const navLinks = [
-    { href: "#about", label: "Tentang" },
-    { href: "#benefits", label: "Benefit" },
-    { href: "#faq", label: "FAQ" },
+    { href: "/top-players", label: "Top Players" },
+    { href: "/manager-tactics", label: "Manager Tactics" },
   ];
 
   return (
