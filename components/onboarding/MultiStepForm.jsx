@@ -432,61 +432,73 @@ export default function MultiStepForm({
               <div className="space-y-5">
                 <motion.div whileHover={{ scale: 1.01 }}>
                   <Button 
-                    type="button"
+                    asChild
                     variant={values.socialTikTok ? "outline" : "default"}
-                    className={cn("w-full h-16 justify-between rounded-2xl text-lg shadow-sm border-2 cursor-pointer", values.socialTikTok ? "bg-background border-border text-muted-foreground" : "border-transparent bg-primary text-primary-foreground hover:bg-primary/90")}
-                    onClick={() => {
-                      window.open("https://www.tiktok.com/@dominator_fcm/photo/7667739169640172821?is_from_webapp=1&sender_device=pc&web_id=7662197260352931345", "_blank");
-                      setValue("socialTikTok", true);
-                    }}
+                    className={cn("w-full h-16 justify-between rounded-2xl text-lg shadow-sm border-2 cursor-pointer transition-all", values.socialTikTok ? "bg-background border-green-500 text-foreground" : "border-transparent bg-primary text-primary-foreground hover:bg-primary/90")}
                   >
-                    <span className="flex items-center"><span className="font-bold">Follow TikTok</span></span>
-                    {values.socialTikTok ? <CheckCircle2 className="h-7 w-7 text-green-500" /> : "Kunjungi"}
+                    <a 
+                      href="https://www.tiktok.com/@dominator_fcm/photo/7667739169640172821?is_from_webapp=1&sender_device=pc&web_id=7662197260352931345" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      onClick={() => setValue("socialTikTok", true, { shouldValidate: true, shouldDirty: true })}
+                    >
+                      <span className="flex items-center"><span className="font-bold">Follow TikTok</span></span>
+                      {values.socialTikTok ? <CheckCircle2 className="h-7 w-7 text-green-500" /> : "Kunjungi"}
+                    </a>
                   </Button>
                 </motion.div>
 
                 <motion.div whileHover={{ scale: 1.01 }}>
                   <Button 
-                    type="button"
+                    asChild
                     variant={values.socialInstagram ? "outline" : "default"}
-                    className={cn("w-full h-16 justify-between rounded-2xl text-lg shadow-sm border-2 cursor-pointer", values.socialInstagram ? "bg-background border-border text-muted-foreground" : "border-transparent bg-primary text-primary-foreground hover:bg-primary/90")}
-                    onClick={() => {
-                      window.open("https://www.instagram.com/p/DacuC5Ay7cp/", "_blank");
-                      setValue("socialInstagram", true);
-                    }}
+                    className={cn("w-full h-16 justify-between rounded-2xl text-lg shadow-sm border-2 cursor-pointer transition-all", values.socialInstagram ? "bg-background border-green-500 text-foreground" : "border-transparent bg-primary text-primary-foreground hover:bg-primary/90")}
                   >
-                    <span className="flex items-center"><span className="font-bold">Follow Instagram</span></span>
-                    {values.socialInstagram ? <CheckCircle2 className="h-7 w-7 text-green-500" /> : "Kunjungi"}
+                    <a 
+                      href="https://www.instagram.com/p/DacuC5Ay7cp/" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      onClick={() => setValue("socialInstagram", true, { shouldValidate: true, shouldDirty: true })}
+                    >
+                      <span className="flex items-center"><span className="font-bold">Follow Instagram</span></span>
+                      {values.socialInstagram ? <CheckCircle2 className="h-7 w-7 text-green-500" /> : "Kunjungi"}
+                    </a>
                   </Button>
                 </motion.div>
 
                 <motion.div whileHover={{ scale: 1.01 }}>
                   <Button 
-                    type="button"
+                    asChild
                     variant={values.socialYouTube ? "outline" : "default"}
-                    className={cn("w-full h-16 justify-between rounded-2xl text-lg shadow-sm border-2 cursor-pointer", values.socialYouTube ? "bg-background border-border text-muted-foreground" : "border-transparent bg-primary text-primary-foreground hover:bg-primary/90")}
-                    onClick={() => {
-                      window.open("https://youtube.com/shorts/QXV6YR6T04U?feature=share", "_blank");
-                      setValue("socialYouTube", true);
-                    }}
+                    className={cn("w-full h-16 justify-between rounded-2xl text-lg shadow-sm border-2 cursor-pointer transition-all", values.socialYouTube ? "bg-background border-green-500 text-foreground" : "border-transparent bg-primary text-primary-foreground hover:bg-primary/90")}
                   >
-                    <span className="flex items-center"><span className="font-bold">Subscribe YouTube</span></span>
-                    {values.socialYouTube ? <CheckCircle2 className="h-7 w-7 text-green-500" /> : "Kunjungi"}
+                    <a 
+                      href="https://youtube.com/shorts/QXV6YR6T04U?feature=share" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      onClick={() => setValue("socialYouTube", true, { shouldValidate: true, shouldDirty: true })}
+                    >
+                      <span className="flex items-center"><span className="font-bold">Subscribe YouTube</span></span>
+                      {values.socialYouTube ? <CheckCircle2 className="h-7 w-7 text-green-500" /> : "Kunjungi"}
+                    </a>
                   </Button>
                 </motion.div>
 
                 <motion.div whileHover={{ scale: 1.01 }}>
                   <Button 
-                    type="button"
+                    asChild
                     variant={values.socialWhatsappChannel ? "outline" : "default"}
-                    className={cn("w-full h-16 justify-between rounded-2xl text-lg shadow-sm border-2 cursor-pointer", values.socialWhatsappChannel ? "bg-background border-border text-muted-foreground" : "border-transparent bg-primary text-primary-foreground hover:bg-primary/90")}
-                    onClick={() => {
-                      window.open("https://whatsapp.com/channel/0029Vb5aadbK5cD5YbbVP73Y", "_blank");
-                      setValue("socialWhatsappChannel", true);
-                    }}
+                    className={cn("w-full h-16 justify-between rounded-2xl text-lg shadow-sm border-2 cursor-pointer transition-all", values.socialWhatsappChannel ? "bg-background border-green-500 text-foreground" : "border-transparent bg-primary text-primary-foreground hover:bg-primary/90")}
                   >
-                    <span className="flex items-center"><span className="font-bold">Join Saluran WhatsApp</span></span>
-                    {values.socialWhatsappChannel ? <CheckCircle2 className="h-7 w-7 text-green-500" /> : "Kunjungi"}
+                    <a 
+                      href="https://whatsapp.com/channel/0029Vb5aadbK5cD5YbbVP73Y" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      onClick={() => setValue("socialWhatsappChannel", true, { shouldValidate: true, shouldDirty: true })}
+                    >
+                      <span className="flex items-center"><span className="font-bold">Join Saluran WhatsApp</span></span>
+                      {values.socialWhatsappChannel ? <CheckCircle2 className="h-7 w-7 text-green-500" /> : "Kunjungi"}
+                    </a>
                   </Button>
                 </motion.div>
               </div>
