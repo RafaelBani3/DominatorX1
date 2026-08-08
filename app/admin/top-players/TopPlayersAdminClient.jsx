@@ -20,7 +20,7 @@ export default function TopPlayersAdminClient({ initialPlayers }) {
     name: "",
     role: "ST",
     image: "", // Base64
-    stats: "",
+    statsObj: { PAC: 90, SHO: 90, PAS: 90, DRI: 90, DEF: 90, PHY: 90 },
     playstyle: "",
     ovr: 90,
     skillMoves: 5,
@@ -43,15 +43,9 @@ export default function TopPlayersAdminClient({ initialPlayers }) {
     setLoading(true);
 
     try {
-      // Validate stats JSON
-      if (formData.stats) {
-        JSON.parse(formData.stats);
-      } else {
-        formData.stats = "{}";
-      }
-
       const res = await createTopPlayer({
         ...formData,
+        stats: JSON.stringify(formData.statsObj),
         ovr: parseInt(formData.ovr, 10),
         skillMoves: parseInt(formData.skillMoves, 10),
         weakFoot: parseInt(formData.weakFoot, 10),
@@ -130,15 +124,23 @@ export default function TopPlayersAdminClient({ initialPlayers }) {
               {formData.image && <img src={formData.image} alt="Preview" className="mt-2 h-20 object-contain bg-slate-200 rounded p-1" />}
             </div>
             <div className="md:col-span-2">
-              <label className="text-sm font-medium text-slate-700">Statistik (Format JSON)</label>
-              <textarea
-                required
-                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                rows={3}
-                placeholder='{"PAC": 90, "SHO": 92, "PAS": 81}'
-                value={formData.stats}
-                onChange={e => setFormData({...formData, stats: e.target.value})}
-              />
+              <label className="text-sm font-medium text-slate-700 mb-2 block">Statistik Pemain</label>
+              <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+                {['PAC', 'SHO', 'PAS', 'DRI', 'DEF', 'PHY'].map((stat) => (
+                  <div key={stat}>
+                    <label className="text-xs font-semibold text-slate-500">{stat}</label>
+                    <Input 
+                      required 
+                      type="number" 
+                      value={formData.statsObj[stat]} 
+                      onChange={e => setFormData({
+                        ...formData, 
+                        statsObj: { ...formData.statsObj, [stat]: parseInt(e.target.value) || 0 }
+                      })} 
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
           <Button type="submit" disabled={loading} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">

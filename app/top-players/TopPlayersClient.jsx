@@ -90,11 +90,11 @@ export default function TopPlayersClient({ initialPlayers }) {
 
                 {/* Stats */}
                 {player.stats && (
-                  <div className="grid grid-cols-3 gap-2 mt-4 text-xs font-medium text-white/70 bg-black/30 rounded-lg p-3">
+                  <div className="flex gap-1.5 justify-center mt-4 w-full">
                     {Object.entries(JSON.parse(player.stats)).slice(0, 6).map(([key, value]) => (
-                      <div key={key} className="flex flex-col items-center">
-                        <span className="text-white">{value}</span>
-                        <span className="text-[10px] uppercase text-white/40">{key}</span>
+                      <div key={key} className="flex flex-col items-center justify-center bg-[#202230] rounded-lg p-2 flex-1 shadow-inner border border-white/10">
+                        <span className="text-white font-bold text-[13px] leading-none mb-1">{value}</span>
+                        <span className="text-[9px] uppercase font-bold text-white/50 leading-none">{key}</span>
                       </div>
                     ))}
                   </div>
