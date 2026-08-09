@@ -13,6 +13,7 @@ const normalizeName = (name) => {
   if (n.includes("jakarta")) return "jakartaraya";
   if (n.includes("yogyakarta")) return "yogyakarta";
   if (n.includes("papuabarat")) return "papuabarat";
+  if (n.includes("bangkabelitung")) return "bangkabelitung";
   return n;
 };
 
