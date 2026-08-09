@@ -29,6 +29,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { authClient } from "@/lib/auth-client";
+import DemographicMap from "./DemographicMap";
 
 const PURPLE = "#7C5CFC";
 const PINK = "#FF6B9D";
@@ -172,30 +173,17 @@ export default function DashboardClient({ stats }) {
           />
         </div>
 
-        <SoftCard className="relative overflow-hidden bg-gradient-to-br from-[#7C5CFC] to-[#9B84FF] text-white xl:col-span-4">
-          <div className="relative z-10 flex h-full flex-col justify-between gap-6">
-            <div>
-              <p className="text-xs font-semibold tracking-[0.14em] text-white/70 uppercase">
-                Insight
-              </p>
-              <h3 className="mt-3 text-2xl font-bold leading-snug">
-                Dominate the pitch together.
-              </h3>
-              <p className="mt-3 text-sm leading-relaxed text-white/80">
-                Pantau tren member baru, acceptance rate, dan kekuatan OVR squad secara real-time.
-              </p>
-            </div>
-            <Button
-              asChild
-              className="h-11 w-fit rounded-2xl bg-white px-5 font-semibold text-[#7C5CFC] hover:bg-white/90"
-            >
-              <Link href="/admin/members">Lihat Member</Link>
-            </Button>
+        <SoftCard className="flex flex-col xl:col-span-4">
+          <div className="mb-4">
+            <h3 className="flex items-center gap-2 text-lg font-bold text-[#1F2430]">
+              <MapPin className="h-5 w-5 text-[#7C5CFC]" />
+              Peta Demografi
+            </h3>
+            <p className="mt-1 text-sm text-[#8A93A6]">Sebaran lokasi member aktif</p>
           </div>
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -right-8 -bottom-10 h-40 w-40 rounded-full bg-white/15 blur-2xl"
-          />
+          <div className="flex-1 min-h-[220px]">
+            <DemographicMap data={stats.provinceChart} />
+          </div>
         </SoftCard>
       </div>
 
