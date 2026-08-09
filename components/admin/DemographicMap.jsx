@@ -116,6 +116,13 @@ export default function DemographicMap({ data }) {
           </p>
         </div>
       )}
+      <div id="debug-datamap" className="absolute bottom-0 left-0 bg-black/80 text-white text-[10px] p-2 max-h-[150px] overflow-auto z-50">
+        <pre>{JSON.stringify({
+          data, 
+          dataMapKeys: Object.keys(dataMap),
+          geoMatched: geoData.features.map(g => normalizeName(g.properties.state || g.properties.name)).filter(n => dataMap[n])
+        }, null, 2)}</pre>
+      </div>
     </div>
   );
 }
