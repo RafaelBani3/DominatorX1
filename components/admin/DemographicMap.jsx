@@ -1,8 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import geoData from "./indonesia.json";
 
@@ -48,58 +47,74 @@ export default function DemographicMap({ data }) {
     return map;
   }, [data]);
 
+  const [tooltipData, setTooltipData] = useState(null);
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+
   return (
     <div className="relative h-full w-full">
-      <TooltipProvider delayDuration={0}>
-        <ComposableMap
-          projection="geoMercator"
-          projectionConfig={{
-            scale: 1000,
-            center: [118, -2], // center of Indonesia
+      <ComposableMap
+        projection="geoMercator"
+        projectionConfig={{
+          scale: 1000,
+          center: [118, -2], // center of Indonesia
+        }}
+        style={{ width: "100%", height: "100%" }}
+      >
+        <Geographies geography={geoData}>
+          {({ geographies }) =>
+            geographies.map((geo) => {
+              const geoName = geo.properties.state || geo.properties.name || "";
+              const normalized = normalizeName(geoName);
+              const provinceData = dataMap[normalized];
+              const val = provinceData?.value || 0;
+              
+              return (
+                <Geography
+                  key={geo.rsmKey}
+                  geography={geo}
+                  fill={colorScale(val)}
+                  stroke="#FFFFFF"
+                  strokeWidth={0.5}
+                  onMouseEnter={(evt) => {
+                    setTooltipData({ name: geoName, val });
+                  }}
+                  onMouseMove={(evt) => {
+                    setTooltipPos({ x: evt.clientX, y: evt.clientY });
+                  }}
+                  onMouseLeave={() => {
+                    setTooltipData(null);
+                  }}
+                  style={{
+                    default: { outline: "none" },
+                    hover: {
+                      fill: provinceData ? "#6B4CEB" : "#D1D5DB",
+                      outline: "none",
+                      cursor: "pointer",
+                      transition: "all 0.2s ease",
+                    },
+                    pressed: { outline: "none" },
+                  }}
+                />
+              );
+            })
+          }
+        </Geographies>
+      </ComposableMap>
+      
+      {tooltipData && (
+        <div 
+          className="pointer-events-none fixed z-50 rounded-xl border border-[#EEE8FF] bg-white px-3 py-2 text-xs shadow-xl text-[#1F2430]"
+          style={{ 
+            left: tooltipPos.x + 10, 
+            top: tooltipPos.y + 10 
           }}
-          style={{ width: "100%", height: "100%" }}
         >
-          <Geographies geography={geoData}>
-            {({ geographies }) =>
-              geographies.map((geo) => {
-                const geoName = geo.properties.state || geo.properties.name || "";
-                const normalized = normalizeName(geoName);
-                const provinceData = dataMap[normalized];
-                const val = provinceData?.value || 0;
-                
-                return (
-                  <Tooltip key={geo.rsmKey}>
-                    <TooltipTrigger asChild>
-                      <Geography
-                        geography={geo}
-                        fill={colorScale(val)}
-                        stroke="#FFFFFF"
-                        strokeWidth={0.5}
-                        style={{
-                          default: { outline: "none" },
-                          hover: {
-                            fill: provinceData ? "#6B4CEB" : "#D1D5DB",
-                            outline: "none",
-                            cursor: "pointer",
-                            transition: "all 0.2s ease",
-                          },
-                          pressed: { outline: "none" },
-                        }}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent className="rounded-xl border border-[#EEE8FF] bg-white px-3 py-2 text-xs shadow-xl text-[#1F2430]">
-                      <p className="font-semibold">{geoName}</p>
-                      <p className="text-[#8A93A6]">
-                        Member: <span className="font-medium text-[#1F2430]">{val}</span>
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                );
-              })
-            }
-          </Geographies>
-        </ComposableMap>
-      </TooltipProvider>
+          <p className="font-semibold">{tooltipData.name}</p>
+          <p className="text-[#8A93A6]">
+            Member: <span className="font-medium text-[#1F2430]">{tooltipData.val}</span>
+          </p>
+        </div>
+      )}
     </div>
   );
 }

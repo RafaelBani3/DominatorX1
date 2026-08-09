@@ -18,6 +18,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import regions from "@/lib/regions.json";
 import { cn } from "@/lib/utils";
 import { submitOnboarding } from "@/lib/actions/onboarding";
 import { useToast } from "@/hooks/use-toast";
@@ -376,11 +378,39 @@ export default function MultiStepForm({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-3">
                   <Label className="font-semibold text-muted-foreground">Provinsi</Label>
-                  <Input className="h-14 bg-background border-border rounded-xl text-md shadow-sm" placeholder="Misal: Jawa Barat" value={values.province || ""} onChange={(e) => setValue("province", e.target.value)} />
+                  <Select 
+                    value={values.province || ""} 
+                    onValueChange={(val) => {
+                      setValue("province", val);
+                      setValue("city", "");
+                    }}
+                  >
+                    <SelectTrigger className="h-14 bg-background border-border rounded-xl text-md shadow-sm">
+                      <SelectValue placeholder="Pilih Provinsi" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {regions.map((p) => (
+                        <SelectItem key={p.name} value={p.name}>{p.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-3">
                   <Label className="font-semibold text-muted-foreground">Kota / Kabupaten</Label>
-                  <Input className="h-14 bg-background border-border rounded-xl text-md shadow-sm" placeholder="Misal: Bandung" value={values.city || ""} onChange={(e) => setValue("city", e.target.value)} />
+                  <Select 
+                    value={values.city || ""} 
+                    onValueChange={(val) => setValue("city", val)}
+                    disabled={!values.province}
+                  >
+                    <SelectTrigger className="h-14 bg-background border-border rounded-xl text-md shadow-sm disabled:opacity-50">
+                      <SelectValue placeholder="Pilih Kota / Kabupaten" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {values.province && regions.find(p => p.name === values.province)?.cities.map((c) => (
+                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
