@@ -4,8 +4,7 @@ import { useMemo } from "react";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-// Use the downloaded GeoJSON
-const geoUrl = "/indonesia.geojson";
+import geoData from "./indonesia.json";
 
 // Helper to normalize province names for matching
 const normalizeName = (name) => {
@@ -60,7 +59,7 @@ export default function DemographicMap({ data }) {
           }}
           style={{ width: "100%", height: "100%" }}
         >
-          <Geographies geography={geoUrl}>
+          <Geographies geography={geoData}>
             {({ geographies }) =>
               geographies.map((geo) => {
                 const geoName = geo.properties.state || geo.properties.name || "";

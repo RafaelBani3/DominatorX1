@@ -137,7 +137,7 @@ export default function DashboardClient({ stats }) {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-12">
-        <div className="grid gap-4 sm:grid-cols-2 xl:col-span-8 xl:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 xl:col-span-12 xl:grid-cols-4">
           <KpiCard
             title="Total Member Aktif"
             value={stats.acceptedMembers ?? stats.totalMembers}
@@ -172,23 +172,10 @@ export default function DashboardClient({ stats }) {
             delta="Konversi pendaftaran"
           />
         </div>
-
-        <SoftCard className="flex flex-col xl:col-span-4">
-          <div className="mb-4">
-            <h3 className="flex items-center gap-2 text-lg font-bold text-[#1F2430]">
-              <MapPin className="h-5 w-5 text-[#7C5CFC]" />
-              Peta Demografi
-            </h3>
-            <p className="mt-1 text-sm text-[#8A93A6]">Sebaran lokasi member aktif</p>
-          </div>
-          <div className="flex-1 min-h-[220px]">
-            <DemographicMap data={stats.provinceChart} />
-          </div>
-        </SoftCard>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-3">
-        <SoftCard className="xl:col-span-2">
+      <div className="grid gap-4 xl:grid-cols-12">
+        <SoftCard className="xl:col-span-8">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div>
               <h3 className="flex items-center gap-2 text-lg font-bold text-[#1F2430]">
@@ -258,7 +245,7 @@ export default function DashboardClient({ stats }) {
           </div>
         </SoftCard>
 
-        <SoftCard>
+        <SoftCard className="xl:col-span-4">
           <div className="mb-2">
             <h3 className="text-lg font-bold text-[#1F2430]">Status Overview</h3>
             <p className="mt-1 text-sm text-[#8A93A6]">Komposisi seluruh pendaftaran</p>
@@ -323,29 +310,21 @@ export default function DashboardClient({ stats }) {
         </SoftCard>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
-        <SoftCard>
+      <div className="grid gap-4 xl:grid-cols-12">
+        <SoftCard className="flex flex-col xl:col-span-8">
           <div className="mb-4">
             <h3 className="flex items-center gap-2 text-lg font-bold text-[#1F2430]">
-              <Users className="h-5 w-5 text-[#7C5CFC]" />
-              Demografi Umur
+              <MapPin className="h-5 w-5 text-[#7C5CFC]" />
+              Peta Demografi Geografis
             </h3>
-            <p className="mt-1 text-sm text-[#8A93A6]">Sebaran usia member aktif</p>
+            <p className="mt-1 text-sm text-[#8A93A6]">Sebaran lokasi member aktif di Indonesia</p>
           </div>
-          <div className="h-[260px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={stats.ageChart || []} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#EEF1F7" />
-                <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fill: "#9AA3B5", fontSize: 11 }} />
-                <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fill: "#9AA3B5", fontSize: 11 }} />
-                <Tooltip content={<ChartTooltip />} cursor={{ fill: "rgba(124,92,252,0.06)" }} />
-                <Bar dataKey="value" name="Member" radius={[12, 12, 12, 12]} fill={PURPLE} maxBarSize={36} />
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="flex-1 min-h-[380px]">
+            <DemographicMap data={stats.provinceChart} />
           </div>
         </SoftCard>
 
-        <SoftCard>
+        <SoftCard className="xl:col-span-4">
           <div className="mb-4">
             <h3 className="flex items-center gap-2 text-lg font-bold text-[#1F2430]">
               <MapPin className="h-5 w-5 text-[#7C5CFC]" />
@@ -353,7 +332,7 @@ export default function DashboardClient({ stats }) {
             </h3>
             <p className="mt-1 text-sm text-[#8A93A6]">Lokasi member aktif terbanyak</p>
           </div>
-          <div className="h-[260px]">
+          <div className="h-[380px]">
             {(stats.provinceChart || []).length === 0 ? (
               <div className="flex h-full items-center justify-center text-sm text-[#8A93A6]">
                 Belum ada data provinsi
@@ -386,8 +365,31 @@ export default function DashboardClient({ stats }) {
             )}
           </div>
         </SoftCard>
+      </div>
 
-        <SoftCard className="lg:col-span-2 xl:col-span-1">
+      <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-2">
+        <SoftCard>
+          <div className="mb-4">
+            <h3 className="flex items-center gap-2 text-lg font-bold text-[#1F2430]">
+              <Users className="h-5 w-5 text-[#7C5CFC]" />
+              Demografi Umur
+            </h3>
+            <p className="mt-1 text-sm text-[#8A93A6]">Sebaran usia member aktif</p>
+          </div>
+          <div className="h-[260px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={stats.ageChart || []} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#EEF1F7" />
+                <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fill: "#9AA3B5", fontSize: 11 }} />
+                <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fill: "#9AA3B5", fontSize: 11 }} />
+                <Tooltip content={<ChartTooltip />} cursor={{ fill: "rgba(124,92,252,0.06)" }} />
+                <Bar dataKey="value" name="Member" radius={[12, 12, 12, 12]} fill={PURPLE} maxBarSize={36} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </SoftCard>
+
+        <SoftCard>
           <div className="mb-4">
             <h3 className="flex items-center gap-2 text-lg font-bold text-[#1F2430]">
               <Gauge className="h-5 w-5 text-[#7C5CFC]" />
