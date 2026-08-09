@@ -29,7 +29,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { authClient } from "@/lib/auth-client";
-import DemographicMap from "./DemographicMap";
 
 const PURPLE = "#7C5CFC";
 const PINK = "#FF6B9D";
@@ -310,21 +309,8 @@ export default function DashboardClient({ stats }) {
         </SoftCard>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-12">
-        <SoftCard className="flex flex-col xl:col-span-8">
-          <div className="mb-4">
-            <h3 className="flex items-center gap-2 text-lg font-bold text-[#1F2430]">
-              <MapPin className="h-5 w-5 text-[#7C5CFC]" />
-              Peta Demografi Geografis
-            </h3>
-            <p className="mt-1 text-sm text-[#8A93A6]">Sebaran lokasi member aktif di Indonesia</p>
-          </div>
-          <div className="flex-1 min-h-[380px]">
-            <DemographicMap data={stats.provinceChart} />
-          </div>
-        </SoftCard>
-
-        <SoftCard className="xl:col-span-4">
+      <div className="grid gap-4 lg:grid-cols-3 xl:grid-cols-3">
+        <SoftCard>
           <div className="mb-4">
             <h3 className="flex items-center gap-2 text-lg font-bold text-[#1F2430]">
               <MapPin className="h-5 w-5 text-[#7C5CFC]" />
@@ -332,7 +318,7 @@ export default function DashboardClient({ stats }) {
             </h3>
             <p className="mt-1 text-sm text-[#8A93A6]">Lokasi member aktif terbanyak</p>
           </div>
-          <div className="h-[380px]">
+          <div className="h-[260px]">
             {(stats.provinceChart || []).length === 0 ? (
               <div className="flex h-full items-center justify-center text-sm text-[#8A93A6]">
                 Belum ada data provinsi
@@ -365,9 +351,7 @@ export default function DashboardClient({ stats }) {
             )}
           </div>
         </SoftCard>
-      </div>
 
-      <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-2">
         <SoftCard>
           <div className="mb-4">
             <h3 className="flex items-center gap-2 text-lg font-bold text-[#1F2430]">
