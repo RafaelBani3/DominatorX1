@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { onboardingSchema } from "@/lib/validations/onboarding";
 import { format, differenceInYears } from "date-fns";
 import { id } from "date-fns/locale";
-import { Loader2, CheckCircle2, Trophy, Shield, Gamepad2, AlertCircle, CalendarIcon } from "lucide-react";
+import { Loader2, CheckCircle2, Trophy, Shield, Gamepad2, AlertCircle, CalendarIcon, ChevronDown, Search, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import regions from "@/lib/regions.json";
 import { cn } from "@/lib/utils";
 import { submitOnboarding } from "@/lib/actions/onboarding";
@@ -31,6 +31,72 @@ const STEPS = [
   { id: 4, title: "Persyaratan", icon: <CheckCircle2 className="w-5 h-5" /> },
   { id: 5, title: "Review", icon: <AlertCircle className="w-5 h-5" /> },
 ];
+
+function SearchableSelect({ value, onChange, options, placeholder, disabled }) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  
+  const filtered = options.filter(o => o.toLowerCase().includes(search.toLowerCase()));
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button 
+          variant="outline" 
+          role="combobox" 
+          aria-expanded={open} 
+          className={cn(
+            "w-full h-14 justify-between bg-background border-border rounded-xl text-md shadow-sm font-normal",
+            !value && "text-muted-foreground",
+            disabled && "opacity-50 cursor-not-allowed"
+          )}
+          disabled={disabled}
+        >
+          <span className="truncate">{value ? value : placeholder}</span>
+          <ChevronDown className="ml-2 h-5 w-5 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+        <div className="flex items-center border-b px-3">
+          <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+          <input 
+            className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50" 
+            placeholder="Cari..." 
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <div className="max-h-[250px] overflow-y-auto overflow-x-hidden p-1">
+          {filtered.length === 0 ? (
+            <div className="py-6 text-center text-sm text-muted-foreground">Tidak ditemukan.</div>
+          ) : (
+            filtered.map((item) => (
+              <div
+                key={item}
+                className={cn(
+                  "relative flex w-full cursor-pointer select-none items-center rounded-sm py-2.5 pl-8 pr-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
+                  value === item ? "bg-accent text-accent-foreground font-medium" : ""
+                )}
+                onClick={() => {
+                  onChange(item);
+                  setOpen(false);
+                  setSearch("");
+                }}
+              >
+                {value === item && (
+                  <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+                    <Check className="h-4 w-4" />
+                  </span>
+                )}
+                {item}
+              </div>
+            ))
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 export default function MultiStepForm({
   settings = {},
@@ -378,39 +444,25 @@ export default function MultiStepForm({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-3">
                   <Label className="font-semibold text-muted-foreground">Provinsi</Label>
-                  <Select 
+                  <SearchableSelect 
                     value={values.province || ""} 
-                    onValueChange={(val) => {
+                    onChange={(val) => {
                       setValue("province", val);
                       setValue("city", "");
                     }}
-                  >
-                    <SelectTrigger className="h-14 bg-background border-border rounded-xl text-md shadow-sm">
-                      <SelectValue placeholder="Pilih Provinsi" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {regions.map((p) => (
-                        <SelectItem key={p.name} value={p.name}>{p.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    options={regions.map((p) => p.name)}
+                    placeholder="Pilih Provinsi"
+                  />
                 </div>
                 <div className="space-y-3">
                   <Label className="font-semibold text-muted-foreground">Kota / Kabupaten</Label>
-                  <Select 
+                  <SearchableSelect 
                     value={values.city || ""} 
-                    onValueChange={(val) => setValue("city", val)}
+                    onChange={(val) => setValue("city", val)}
+                    options={values.province ? regions.find(p => p.name === values.province)?.cities || [] : []}
                     disabled={!values.province}
-                  >
-                    <SelectTrigger className="h-14 bg-background border-border rounded-xl text-md shadow-sm disabled:opacity-50">
-                      <SelectValue placeholder="Pilih Kota / Kabupaten" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {values.province && regions.find(p => p.name === values.province)?.cities.map((c) => (
-                        <SelectItem key={c} value={c}>{c}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    placeholder="Pilih Kota / Kabupaten"
+                  />
                 </div>
               </div>
 
