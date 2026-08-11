@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { getMembers, updateMemberStatus, deleteMember, getAllMembersForExport } from "@/lib/actions/members";
+import { getMembers, updateMemberStatus, deleteMember, getAllMembersForExport, updateMemberData } from "@/lib/actions/members";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
-import { FileSpreadsheet, FileText, Search, Loader2, Eye, Check, X, Trash2, Filter, MoreHorizontal, UserCircle2 } from "lucide-react";
+import { FileSpreadsheet, FileText, Search, Loader2, Eye, Check, X, Trash2, Filter, MoreHorizontal, UserCircle2, Edit2, Save } from "lucide-react";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
@@ -28,7 +28,8 @@ export default function MemberList() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [selectedMember, setSelectedMember] = useState(null);
-  
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({});
   const { toast } = useToast();
 
   const fetchMembers = useCallback(async () => {
@@ -85,6 +86,31 @@ export default function MemberList() {
       fetchMembers();
     } else {
       toast({ title: "Error", description: "Gagal menghapus member", variant: "destructive" });
+    }
+  };
+
+  const handleEditClick = (member) => {
+    setSelectedMember(member);
+    setEditForm({
+      fullName: member.fullName,
+      fcMobileNickname: member.fcMobileNickname,
+      phoneNumber: member.phoneNumber || "",
+      ovr: member.ovr,
+      city: member.city,
+      province: member.province,
+    });
+    setIsEditing(true);
+  };
+
+  const handleSaveEdit = async () => {
+    const res = await updateMemberData(selectedMember.id, editForm);
+    if (res.success) {
+      toast({ title: "Sukses", description: "Data berhasil diperbarui" });
+      fetchMembers();
+      setSelectedMember(null);
+      setIsEditing(false);
+    } else {
+      toast({ title: "Error", description: "Gagal memperbarui data", variant: "destructive" });
     }
   };
 
@@ -250,8 +276,11 @@ export default function MemberList() {
                     </TableCell>
                     <TableCell className="py-4 pr-6 text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-[#7A8499] hover:text-[#7C5CFC] hover:bg-[#7C5CFC]/10" onClick={() => setSelectedMember(member)}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-[#7A8499] hover:text-[#7C5CFC] hover:bg-[#7C5CFC]/10" onClick={() => { setSelectedMember(member); setIsEditing(false); }}>
                           <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-[#7A8499] hover:text-[#00A86B] hover:bg-[#00A86B]/10" onClick={() => handleEditClick(member)}>
+                          <Edit2 className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-[#7A8499] hover:text-[#FF5A7A] hover:bg-[#FF5A7A]/10" onClick={() => handleDelete(member.id)}>
                           <Trash2 className="h-4 w-4" />
@@ -282,8 +311,8 @@ export default function MemberList() {
       </Card>
 
       <Dialog open={selectedMember !== null} onOpenChange={(open) => !open && setSelectedMember(null)}>
-        <DialogContent className="sm:max-w-md bg-white border-[#E8ECF4] shadow-xl p-0 overflow-hidden">
-          {selectedMember && (
+        <DialogContent className="sm:max-w-md bg-white border-[#E8ECF4] shadow-xl p-0 overflow-hidden max-h-[90vh] overflow-y-auto">
+          {selectedMember && !isEditing && (
             <>
               <div className="bg-[#F8FAFC] px-6 py-5 flex items-center gap-4 border-b border-[#E8ECF4]">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#7C5CFC]/10 text-[#7C5CFC] font-bold text-xl">
@@ -338,6 +367,52 @@ export default function MemberList() {
                       <X className="mr-2 h-4 w-4" /> Tolak
                     </Button>
                   )}
+                </div>
+              </div>
+            </>
+          )}
+
+          {selectedMember && isEditing && (
+            <>
+              <div className="bg-[#F8FAFC] px-6 py-5 border-b border-[#E8ECF4]">
+                <h3 className="text-lg font-bold text-[#1F2430]">Edit Member</h3>
+              </div>
+              <div className="p-6 space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-[#9AA3B5]">Nama Lengkap</label>
+                  <Input value={editForm.fullName || ""} onChange={e => setEditForm({...editForm, fullName: e.target.value})} className="h-10 bg-white" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-[#9AA3B5]">Nickname</label>
+                    <Input value={editForm.fcMobileNickname || ""} onChange={e => setEditForm({...editForm, fcMobileNickname: e.target.value})} className="h-10 bg-white" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-[#9AA3B5]">OVR</label>
+                    <Input type="number" value={editForm.ovr || ""} onChange={e => setEditForm({...editForm, ovr: parseInt(e.target.value) || 0})} className="h-10 bg-white" />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-[#9AA3B5]">No Telepon</label>
+                  <Input value={editForm.phoneNumber || ""} onChange={e => setEditForm({...editForm, phoneNumber: e.target.value})} className="h-10 bg-white" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-[#9AA3B5]">Provinsi</label>
+                    <Input value={editForm.province || ""} onChange={e => setEditForm({...editForm, province: e.target.value})} className="h-10 bg-white" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-[#9AA3B5]">Kota</label>
+                    <Input value={editForm.city || ""} onChange={e => setEditForm({...editForm, city: e.target.value})} className="h-10 bg-white" />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-6 border-t border-[#E8ECF4] mt-2">
+                  <Button variant="outline" className="h-10 flex-1 border-[#E8ECF4] text-[#4E5669]" onClick={() => setIsEditing(false)}>
+                    Batal
+                  </Button>
+                  <Button className="h-10 bg-[#7C5CFC] hover:bg-[#6b4ce3] text-white flex-1" onClick={handleSaveEdit}>
+                    <Save className="mr-2 h-4 w-4" /> Simpan
+                  </Button>
                 </div>
               </div>
             </>
