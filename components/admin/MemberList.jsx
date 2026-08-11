@@ -96,6 +96,7 @@ export default function MemberList() {
     sheet.columns = [
       { header: "Nama Lengkap", key: "fullName", width: 25 },
       { header: "Nickname", key: "fcMobileNickname", width: 20 },
+      { header: "No Telepon", key: "phoneNumber", width: 20 },
       { header: "OVR", key: "ovr", width: 10 },
       { header: "Domisili", key: "city", width: 20 },
       { header: "Status", key: "status", width: 15 },
@@ -186,6 +187,7 @@ export default function MemberList() {
               <TableRow className="border-[#E8ECF4] hover:bg-transparent">
                 <TableHead className="h-12 text-xs font-semibold text-[#7A8499] uppercase tracking-wider pl-6">Profil Member</TableHead>
                 <TableHead className="h-12 text-xs font-semibold text-[#7A8499] uppercase tracking-wider">Game Info</TableHead>
+                <TableHead className="h-12 text-xs font-semibold text-[#7A8499] uppercase tracking-wider">No Telepon</TableHead>
                 <TableHead className="h-12 text-xs font-semibold text-[#7A8499] uppercase tracking-wider">Domisili</TableHead>
                 <TableHead className="h-12 text-xs font-semibold text-[#7A8499] uppercase tracking-wider">Status</TableHead>
                 <TableHead className="h-12 text-xs font-semibold text-[#7A8499] uppercase tracking-wider text-right pr-6">Aksi</TableHead>
@@ -229,6 +231,9 @@ export default function MemberList() {
                         <span className="font-medium text-[#1F2430]">{member.fcMobileNickname}</span>
                         <span className="text-xs text-[#7A8499]">OVR <span className="font-bold text-[#7C5CFC]">{member.ovr}</span></span>
                       </div>
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <span className="text-sm font-medium text-[#1F2430]">{member.phoneNumber || "-"}</span>
                     </TableCell>
                     <TableCell className="py-4">
                       <span className="text-sm text-[#4E5669]">{member.city}</span>
@@ -303,6 +308,10 @@ export default function MemberList() {
                   <div>
                     <span className="block text-xs font-medium text-[#9AA3B5] mb-1">OVR</span>
                     <span className="inline-flex h-6 items-center rounded-md bg-[#7C5CFC]/10 px-2 text-xs font-bold text-[#7C5CFC]">{selectedMember.ovr}</span>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="block text-xs font-medium text-[#9AA3B5] mb-1">No Telepon</span>
+                    <span className="block font-medium text-[#1F2430]">{selectedMember.phoneNumber || "-"}</span>
                   </div>
                   <div className="col-span-2">
                     <span className="block text-xs font-medium text-[#9AA3B5] mb-1">Domisili</span>

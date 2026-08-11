@@ -175,7 +175,7 @@ export default function MultiStepForm({
     }
     
     if (currentStep === 2) {
-      if (!values.fullName || !values.province || !values.city || !values.fcMobileNickname || !values.ovr) {
+      if (!values.fullName || !values.phoneNumber || !values.province || !values.city || !values.fcMobileNickname || !values.ovr) {
         toast({ title: "Perhatian", description: "Lengkapi semua data diri", variant: "destructive" });
         return;
       }
@@ -441,6 +441,11 @@ export default function MultiStepForm({
                 <Input className="h-14 bg-background border-border rounded-xl text-md shadow-sm" placeholder="Masukkan nama lengkap Anda" value={values.fullName || ""} onChange={(e) => setValue("fullName", e.target.value)} />
               </div>
               
+              <div className="space-y-3">
+                <Label className="font-semibold text-muted-foreground">No Telepon (WhatsApp)</Label>
+                <Input className="h-14 bg-background border-border rounded-xl text-md shadow-sm" placeholder="Contoh: 081234567890" value={values.phoneNumber || ""} onChange={(e) => setValue("phoneNumber", e.target.value)} />
+              </div>
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-3">
                   <Label className="font-semibold text-muted-foreground">Provinsi</Label>
@@ -597,6 +602,10 @@ export default function MultiStepForm({
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 items-center border-b border-border pb-4">
                   <span className="text-muted-foreground font-semibold">Nama Lengkap</span>
                   <span className="sm:col-span-2 font-bold text-lg text-foreground">{values.fullName}</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 items-center border-b border-border pb-4">
+                  <span className="text-muted-foreground font-semibold">No Telepon</span>
+                  <span className="sm:col-span-2 font-bold text-lg text-foreground">{values.phoneNumber}</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 items-center border-b border-border pb-4">
                   <span className="text-muted-foreground font-semibold">Tanggal Lahir & Umur</span>
