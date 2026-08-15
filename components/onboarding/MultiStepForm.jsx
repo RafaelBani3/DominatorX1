@@ -146,8 +146,32 @@ export default function MultiStepForm({
     } catch {}
   };
 
-  const handleCancel = () => {
+  const resetFormState = () => {
     clearDraft();
+    reset({
+      phoneOwner: "",
+      phoneChecked: "",
+      warningAccept: false,
+      fullName: "",
+      phoneNumber: "",
+      birthDate: undefined,
+      province: "",
+      city: "",
+      fcMobileNickname: "",
+      ovr: undefined,
+      socialTikTok: false,
+      socialInstagram: false,
+      socialYouTube: false,
+      socialWhatsappChannel: false,
+      canScore30: "",
+    });
+    setCurrentStep(1);
+    setRejectionReason(null);
+  };
+
+  const handleCancel = () => {
+    resetFormState();
+    setIsSuccess(false);
     if (onCancel) onCancel();
     else window.location.href = "/";
   };
@@ -300,7 +324,7 @@ export default function MultiStepForm({
     try {
       const res = await submitOnboarding({ ...values, status: "accepted" });
       if (res.success) {
-        clearDraft();
+        resetFormState();
         setIsSuccess(true);
       } else {
         toast({ title: "Error", description: res.error || "Terjadi kesalahan", variant: "destructive" });
@@ -357,19 +381,29 @@ export default function MultiStepForm({
         <p className="mb-8 text-lg text-muted-foreground">
           Pendaftaran berhasil. Silakan bergabung ke WhatsApp Group untuk informasi lebih lanjut.
         </p>
-        <Button
-          asChild
-          size="lg"
-          className="w-full cursor-pointer rounded-xl px-8 py-6 text-lg font-bold"
-        >
-          <a
-            href={whatsappGroupLink || "#"}
-            target={whatsappGroupLink ? "_blank" : "_self"}
-            rel="noreferrer"
+        <div className="space-y-3">
+          <Button
+            asChild
+            size="lg"
+            className="w-full cursor-pointer rounded-xl px-8 py-6 text-lg font-bold"
           >
-            Gabung WhatsApp Group
-          </a>
-        </Button>
+            <a
+              href={whatsappGroupLink || "#"}
+              target={whatsappGroupLink ? "_blank" : "_self"}
+              rel="noreferrer"
+            >
+              Gabung WhatsApp Group
+            </a>
+          </Button>
+          <Button
+            variant="ghost"
+            size="lg"
+            onClick={handleCancel}
+            className="w-full rounded-xl text-md font-semibold text-muted-foreground hover:text-foreground"
+          >
+            Selesai / Tutup
+          </Button>
+        </div>
       </motion.div>
     );
   }
