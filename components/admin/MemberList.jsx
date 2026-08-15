@@ -1,8 +1,5 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-"use client";
-
 import { useState, useEffect, useCallback } from "react";
-import { getMembers, updateMemberStatus, deleteMember, getAllMembersForExport, updateMemberData } from "@/lib/actions/members";
+import { getMembers, updateMemberStatus, deleteMember, getAllMembersForExport, updateMemberData, createMember } from "@/lib/actions/members";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +9,7 @@ import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
-import { FileSpreadsheet, FileText, Search, Loader2, Eye, Check, X, Trash2, Filter, MoreHorizontal, UserCircle2, Edit2, Save } from "lucide-react";
+import { FileSpreadsheet, FileText, Search, Loader2, Eye, Check, X, Trash2, Filter, MoreHorizontal, UserCircle2, Edit2, Save, Plus } from "lucide-react";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
@@ -30,6 +27,18 @@ export default function MemberList() {
   const [selectedMember, setSelectedMember] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({});
+  const [isCreating, setIsCreating] = useState(false);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    fullName: "",
+    phoneNumber: "",
+    birthDate: "2000-01-01",
+    fcMobileNickname: "",
+    ovr: 100,
+    province: "",
+    city: "",
+    status: "accepted",
+  });
   const { toast } = useToast();
 
   const fetchMembers = useCallback(async () => {
@@ -102,6 +111,46 @@ export default function MemberList() {
     setIsEditing(true);
   };
 
+  const handleOpenCreate = () => {
+    setCreateForm({
+      fullName: "",
+      phoneNumber: "",
+      birthDate: "2000-01-01",
+      fcMobileNickname: "",
+      ovr: 100,
+      province: "",
+      city: "",
+      status: "accepted",
+    });
+    setIsCreating(true);
+  };
+
+  const handleSaveCreate = async () => {
+    if (!createForm.fullName.trim()) {
+      toast({ title: "Error", description: "Nama lengkap wajib diisi", variant: "destructive" });
+      return;
+    }
+    if (!createForm.fcMobileNickname.trim()) {
+      toast({ title: "Error", description: "Nickname wajib diisi", variant: "destructive" });
+      return;
+    }
+    setCreateLoading(true);
+    try {
+      const res = await createMember(createForm);
+      if (res.success) {
+        toast({ title: "Sukses", description: "Member baru berhasil ditambahkan" });
+        setIsCreating(false);
+        fetchMembers();
+      } else {
+        toast({ title: "Error", description: res.error || "Gagal menambahkan member", variant: "destructive" });
+      }
+    } catch (err) {
+      toast({ title: "Error", description: "Terjadi kesalahan", variant: "destructive" });
+    } finally {
+      setCreateLoading(false);
+    }
+  };
+
   const handleSaveEdit = async () => {
     const res = await updateMemberData(selectedMember.id, editForm);
     if (res.success) {
@@ -168,7 +217,10 @@ export default function MemberList() {
           <h2 className="text-2xl font-bold tracking-tight text-[#1F2430]">Member List</h2>
           <p className="text-sm text-[#7A8499]">Kelola data pendaftaran dan status anggota.</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button className="h-10 gap-2 bg-[#7C5CFC] text-white shadow-sm hover:bg-[#6b4ce3]" onClick={handleOpenCreate}>
+            <Plus className="h-4 w-4" /> Tambah Member
+          </Button>
           <Button variant="outline" className="h-10 gap-2 border-[#E8ECF4] bg-white text-[#7C5CFC] shadow-sm hover:bg-[#F4F6FB] hover:text-[#7C5CFC]" onClick={exportExcel}>
             <FileSpreadsheet className="h-4 w-4" /> Export Excel
           </Button>
@@ -417,6 +469,73 @@ export default function MemberList() {
               </div>
             </>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Tambah Member Baru */}
+      <Dialog open={isCreating} onOpenChange={setIsCreating}>
+        <DialogContent className="max-w-lg p-0 overflow-hidden bg-white border-[#E8ECF4] shadow-2xl rounded-2xl">
+          <div className="bg-[#F8FAFC] px-6 py-5 border-b border-[#E8ECF4]">
+            <h3 className="text-lg font-bold text-[#1F2430]">Tambah Member Baru</h3>
+            <p className="text-xs text-[#7A8499] mt-0.5">Input data anggota komunitas Dominator XI secara manual.</p>
+          </div>
+          <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-[#4E5669]">Nama Lengkap <span className="text-red-500">*</span></label>
+              <Input placeholder="Contoh: Budi Santoso" value={createForm.fullName} onChange={e => setCreateForm({...createForm, fullName: e.target.value})} className="h-10 bg-white" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-[#4E5669]">Nickname FC Mobile <span className="text-red-500">*</span></label>
+                <Input placeholder="Contoh: DM_Budi" value={createForm.fcMobileNickname} onChange={e => setCreateForm({...createForm, fcMobileNickname: e.target.value})} className="h-10 bg-white" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-[#4E5669]">OVR <span className="text-red-500">*</span></label>
+                <Input type="number" placeholder="100" value={createForm.ovr} onChange={e => setCreateForm({...createForm, ovr: parseInt(e.target.value) || 0})} className="h-10 bg-white" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-[#4E5669]">No Telepon (WhatsApp)</label>
+                <Input placeholder="08123456789" value={createForm.phoneNumber} onChange={e => setCreateForm({...createForm, phoneNumber: e.target.value})} className="h-10 bg-white" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-[#4E5669]">Tanggal Lahir</label>
+                <Input type="date" value={createForm.birthDate} onChange={e => setCreateForm({...createForm, birthDate: e.target.value})} className="h-10 bg-white" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-[#4E5669]">Provinsi</label>
+                <Input placeholder="DKI JAKARTA" value={createForm.province} onChange={e => setCreateForm({...createForm, province: e.target.value})} className="h-10 bg-white" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-[#4E5669]">Kota</label>
+                <Input placeholder="JAKARTA SELATAN" value={createForm.city} onChange={e => setCreateForm({...createForm, city: e.target.value})} className="h-10 bg-white" />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-[#4E5669]">Status Member</label>
+              <Select value={createForm.status} onValueChange={val => setCreateForm({...createForm, status: val})}>
+                <SelectTrigger className="h-10 bg-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="accepted">Accepted (Diterima)</SelectItem>
+                  <SelectItem value="pending">Pending (Menunggu)</SelectItem>
+                  <SelectItem value="rejected">Rejected (Ditolak)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end gap-2 pt-4 border-t border-[#E8ECF4] mt-4">
+              <Button variant="outline" className="h-10 flex-1 border-[#E8ECF4] text-[#4E5669]" onClick={() => setIsCreating(false)}>
+                Batal
+              </Button>
+              <Button className="h-10 bg-[#7C5CFC] hover:bg-[#6b4ce3] text-white flex-1" onClick={handleSaveCreate} disabled={createLoading}>
+                {createLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />} Simpan Member
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

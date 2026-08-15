@@ -1,7 +1,5 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,12 +10,6 @@ import {
 import MultiStepForm from "@/components/onboarding/MultiStepForm";
 
 export default function OnboardingModal({ open, onOpenChange, settings = {} }) {
-  const [formKey, setFormKey] = useState(0);
-
-  useEffect(() => {
-    if (open) setFormKey((k) => k + 1);
-  }, [open]);
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -35,7 +27,6 @@ export default function OnboardingModal({ open, onOpenChange, settings = {} }) {
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-white px-4 py-4 sm:px-6 sm:py-5">
           <MultiStepForm
-            key={formKey}
             settings={settings}
             embedded
             onCancel={() => onOpenChange(false)}

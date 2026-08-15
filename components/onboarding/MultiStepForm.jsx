@@ -98,6 +98,8 @@ function SearchableSelect({ value, onChange, options, placeholder, disabled }) {
   );
 }
 
+const DRAFT_KEY = "dominator_onboarding_draft";
+
 export default function MultiStepForm({
   settings = {},
   embedded = false,
@@ -108,6 +110,7 @@ export default function MultiStepForm({
   const [isSuccess, setIsSuccess] = useState(false);
   const [rejectionReason, setRejectionReason] = useState(null);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isRestored, setIsRestored] = useState(false);
   
   const { toast } = useToast();
 
@@ -120,7 +123,15 @@ export default function MultiStepForm({
   const joinRequirementsText = settings.join_requirements || "Tunjukkan dukungan Anda dengan mengikuti kanal sosial media resmi kami.";
   const communityName = settings.community_name || "Dominator XI";
 
+  const clearDraft = () => {
+    try {
+      localStorage.removeItem(DRAFT_KEY);
+      localStorage.removeItem("dominator_onboarding_open");
+    } catch {}
+  };
+
   const handleCancel = () => {
+    clearDraft();
     if (onCancel) onCancel();
     else window.location.href = "/";
   };
@@ -140,12 +151,68 @@ export default function MultiStepForm({
     mode: "onChange",
   });
 
-  const { watch, setValue, formState: { errors } } = form;
+  const { watch, setValue, reset, formState: { errors } } = form;
   const values = watch();
+
+  // Restore draft from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(DRAFT_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed) {
+          if (parsed.birthDate) {
+            parsed.birthDate = new Date(parsed.birthDate);
+          }
+          if (parsed.currentStep && parsed.currentStep >= 1 && parsed.currentStep <= 5) {
+            setCurrentStep(parsed.currentStep);
+          }
+          reset(parsed);
+        }
+      }
+    } catch (e) {
+      console.error("Failed to restore onboarding draft", e);
+    } finally {
+      setIsRestored(true);
+    }
+  }, [reset]);
+
+  // Persist draft to localStorage on values or currentStep change (after restored)
+  useEffect(() => {
+    if (!isRestored) return;
+    try {
+      const draft = {
+        ...values,
+        birthDate: values.birthDate ? values.birthDate.toISOString() : null,
+        currentStep,
+      };
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    } catch (e) {
+      console.error("Failed to save onboarding draft", e);
+    }
+  }, [values, currentStep, isRestored]);
+
+  // Handle immediate state saving on social link click
+  const handleVisitSocial = (key) => {
+    setValue(key, true, { shouldValidate: true, shouldDirty: true });
+    try {
+      const draft = {
+        ...form.getValues(),
+        [key]: true,
+        birthDate: values.birthDate ? values.birthDate.toISOString() : null,
+        currentStep: 4,
+      };
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+      localStorage.setItem("dominator_onboarding_open", "true");
+    } catch (e) {
+      console.error("Failed to save social click", e);
+    }
+  };
 
   // Instant rejection logic
   useEffect(() => {
     if (values.phoneOwner === "orang_tua") {
+      clearDraft();
       setRejectionReason(`Mohon maaf. Saat ini Anda belum dapat bergabung ke komunitas ${communityName} karena alasan Parent Permission (Handphone milik orang tua). Terima kasih.`);
       submitOnboarding({ ...values, status: "rejected", reason: "Parent Permission - Not Owned" });
     }
@@ -153,6 +220,7 @@ export default function MultiStepForm({
 
   useEffect(() => {
     if (values.phoneChecked === "ya") {
+      clearDraft();
       setRejectionReason(`Mohon maaf. Saat ini Anda belum dapat bergabung ke komunitas ${communityName} karena alasan Parent Permission (Handphone sering diperiksa orang tua). Terima kasih.`);
       submitOnboarding({ ...values, status: "rejected", reason: "Parent Permission - Monitored" });
     }
@@ -216,6 +284,7 @@ export default function MultiStepForm({
     try {
       const res = await submitOnboarding({ ...values, status: "accepted" });
       if (res.success) {
+        clearDraft();
         setIsSuccess(true);
       } else {
         toast({ title: "Error", description: res.error || "Terjadi kesalahan", variant: "destructive" });
@@ -535,7 +604,7 @@ export default function MultiStepForm({
                       href={tiktokLink} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      onClick={() => setValue("socialTikTok", true, { shouldValidate: true, shouldDirty: true })}
+                      onClick={() => handleVisitSocial("socialTikTok")}
                     >
                       <span className="flex items-center"><span className="font-bold">Follow TikTok</span></span>
                       {values.socialTikTok ? <CheckCircle2 className="h-7 w-7 text-green-500" /> : "Kunjungi"}
@@ -553,7 +622,7 @@ export default function MultiStepForm({
                       href={instagramLink} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      onClick={() => setValue("socialInstagram", true, { shouldValidate: true, shouldDirty: true })}
+                      onClick={() => handleVisitSocial("socialInstagram")}
                     >
                       <span className="flex items-center"><span className="font-bold">Follow Instagram</span></span>
                       {values.socialInstagram ? <CheckCircle2 className="h-7 w-7 text-green-500" /> : "Kunjungi"}
@@ -571,7 +640,7 @@ export default function MultiStepForm({
                       href={youtubeLink} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      onClick={() => setValue("socialYouTube", true, { shouldValidate: true, shouldDirty: true })}
+                      onClick={() => handleVisitSocial("socialYouTube")}
                     >
                       <span className="flex items-center"><span className="font-bold">Subscribe YouTube</span></span>
                       {values.socialYouTube ? <CheckCircle2 className="h-7 w-7 text-green-500" /> : "Kunjungi"}
@@ -589,7 +658,7 @@ export default function MultiStepForm({
                       href={whatsappChannelLink} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      onClick={() => setValue("socialWhatsappChannel", true, { shouldValidate: true, shouldDirty: true })}
+                      onClick={() => handleVisitSocial("socialWhatsappChannel")}
                     >
                       <span className="flex items-center"><span className="font-bold">Join Saluran WhatsApp</span></span>
                       {values.socialWhatsappChannel ? <CheckCircle2 className="h-7 w-7 text-green-500" /> : "Kunjungi"}

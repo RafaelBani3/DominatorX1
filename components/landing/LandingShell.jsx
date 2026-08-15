@@ -14,7 +14,12 @@ export default function LandingShell({ settings = {} }) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if (searchParams.get("join") === "1") {
+    const hasJoinParam = searchParams.get("join") === "1";
+    let hasSavedOpen = false;
+    try {
+      hasSavedOpen = localStorage.getItem("dominator_onboarding_open") === "true";
+    } catch {}
+    if (hasJoinParam || hasSavedOpen) {
       setOpen(true);
     }
   }, [searchParams]);
@@ -22,14 +27,24 @@ export default function LandingShell({ settings = {} }) {
   const handleOpenChange = useCallback(
     (next) => {
       setOpen(next);
-      if (!next && searchParams.get("join") === "1") {
-        router.replace(pathname, { scroll: false });
-      }
+      try {
+        if (next) {
+          localStorage.setItem("dominator_onboarding_open", "true");
+        } else {
+          localStorage.removeItem("dominator_onboarding_open");
+          if (searchParams.get("join") === "1") {
+            router.replace(pathname, { scroll: false });
+          }
+        }
+      } catch {}
     },
     [pathname, router, searchParams]
   );
 
   const openJoin = useCallback(() => {
+    try {
+      localStorage.setItem("dominator_onboarding_open", "true");
+    } catch {}
     setOpen(true);
   }, []);
 
