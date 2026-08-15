@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect, useCallback } from "react";
 import { getMembers, updateMemberStatus, deleteMember, getAllMembersForExport, updateMemberData, createMember } from "@/lib/actions/members";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
