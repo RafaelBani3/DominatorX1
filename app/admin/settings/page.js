@@ -1,6 +1,9 @@
 import { getSettings } from "@/lib/actions/settings";
 import SettingsForm from "@/components/admin/SettingsForm";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata = {
   title: "Settings - Admin Dominator XI",
 };

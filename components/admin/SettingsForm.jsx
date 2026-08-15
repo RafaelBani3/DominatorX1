@@ -10,17 +10,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Save } from "lucide-react";
 
-export default function SettingsForm({ initialSettings }) {
+export default function SettingsForm({ initialSettings = {} }) {
   const [settings, setSettings] = useState({
     community_name: initialSettings.community_name || "Dominator XI",
     logo_url: initialSettings.logo_url || "",
-    tiktok_link: initialSettings.tiktok_link || "https://www.tiktok.com/@dominator_fcm/photo/7667739169640172821?is_from_webapp=1&sender_device=pc&web_id=7662197260352931345",
-    instagram_link: initialSettings.instagram_link || "https://www.instagram.com/p/DacuC5Ay7cp/",
-    youtube_link: initialSettings.youtube_link || "https://youtube.com/shorts/QXV6YR6T04U?feature=share",
-    whatsapp_channel_link: initialSettings.whatsapp_channel_link || "https://whatsapp.com/channel/0029Vb5aadbK5cD5YbbVP73Y",
-    whatsapp_link: initialSettings.whatsapp_link || "https://chat.whatsapp.com/FkZf7UL7HQ0E768p3eB2DM",
-    disclaimer: initialSettings.disclaimer || "Saya memahami bahwa keputusan bergabung ke komunitas ini merupakan keputusan pribadi saya. Apabila di kemudian hari terjadi kesalahpahaman dengan orang tua maupun wali, maka hal tersebut bukan menjadi tanggung jawab admin maupun komunitas.",
-    join_requirements: initialSettings.join_requirements || "Tunjukkan dukungan Anda dengan mengikuti kanal sosial media resmi kami.",
+    tiktok_link: initialSettings.tiktok_link || "",
+    instagram_link: initialSettings.instagram_link || "",
+    youtube_link: initialSettings.youtube_link || "",
+    whatsapp_channel_link: initialSettings.whatsapp_channel_link || "",
+    whatsapp_link: initialSettings.whatsapp_link || "",
+    disclaimer: initialSettings.disclaimer || "",
+    join_requirements: initialSettings.join_requirements || "",
   });
   
   const [loading, setLoading] = useState(false);

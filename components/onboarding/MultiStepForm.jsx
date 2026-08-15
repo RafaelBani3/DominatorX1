@@ -22,6 +22,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import regions from "@/lib/regions.json";
 import { cn } from "@/lib/utils";
 import { submitOnboarding } from "@/lib/actions/onboarding";
+import { getSettings } from "@/lib/actions/settings";
 import { useToast } from "@/hooks/use-toast";
 
 const STEPS = [
@@ -111,17 +112,32 @@ export default function MultiStepForm({
   const [rejectionReason, setRejectionReason] = useState(null);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isRestored, setIsRestored] = useState(false);
+  const [liveSettings, setLiveSettings] = useState(settings);
   
   const { toast } = useToast();
 
-  const tiktokLink = settings.tiktok_link || "https://www.tiktok.com/@dominator_fcm/photo/7667739169640172821?is_from_webapp=1&sender_device=pc&web_id=7662197260352931345";
-  const instagramLink = settings.instagram_link || "https://www.instagram.com/p/DacuC5Ay7cp/";
-  const youtubeLink = settings.youtube_link || "https://youtube.com/shorts/QXV6YR6T04U?feature=share";
-  const whatsappChannelLink = settings.whatsapp_channel_link || "https://whatsapp.com/channel/0029Vb5aadbK5cD5YbbVP73Y";
-  const whatsappGroupLink = settings.whatsapp_link || "https://chat.whatsapp.com/FkZf7UL7HQ0E768p3eB2DM";
-  const disclaimerText = settings.disclaimer || "Saya memahami bahwa keputusan bergabung ke komunitas ini merupakan keputusan pribadi saya. Apabila di kemudian hari terjadi kesalahpahaman dengan orang tua maupun wali, maka hal tersebut bukan menjadi tanggung jawab admin maupun komunitas.";
-  const joinRequirementsText = settings.join_requirements || "Tunjukkan dukungan Anda dengan mengikuti kanal sosial media resmi kami.";
-  const communityName = settings.community_name || "Dominator XI";
+  useEffect(() => {
+    let isMounted = true;
+    getSettings()
+      .then((data) => {
+        if (isMounted && data && typeof data === "object") {
+          setLiveSettings(prev => ({ ...prev, ...data }));
+        }
+      })
+      .catch(console.error);
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const tiktokLink = liveSettings.tiktok_link || "";
+  const instagramLink = liveSettings.instagram_link || "";
+  const youtubeLink = liveSettings.youtube_link || "";
+  const whatsappChannelLink = liveSettings.whatsapp_channel_link || "";
+  const whatsappGroupLink = liveSettings.whatsapp_link || "";
+  const disclaimerText = liveSettings.disclaimer || "Saya memahami bahwa keputusan bergabung ke komunitas ini merupakan keputusan pribadi saya. Apabila di kemudian hari terjadi kesalahpahaman dengan orang tua maupun wali, maka hal tersebut bukan menjadi tanggung jawab admin maupun komunitas.";
+  const joinRequirementsText = liveSettings.join_requirements || "Tunjukkan dukungan Anda dengan mengikuti kanal sosial media resmi kami.";
+  const communityName = liveSettings.community_name || "Dominator XI";
 
   const clearDraft = () => {
     try {
@@ -347,8 +363,8 @@ export default function MultiStepForm({
           className="w-full cursor-pointer rounded-xl px-8 py-6 text-lg font-bold"
         >
           <a
-            href={whatsappGroupLink}
-            target="_blank"
+            href={whatsappGroupLink || "#"}
+            target={whatsappGroupLink ? "_blank" : "_self"}
             rel="noreferrer"
           >
             Gabung WhatsApp Group
@@ -601,8 +617,8 @@ export default function MultiStepForm({
                     className={cn("w-full h-16 justify-between rounded-2xl text-lg shadow-sm border-2 cursor-pointer transition-all", values.socialTikTok ? "bg-background border-green-500 text-foreground" : "border-transparent bg-primary text-primary-foreground hover:bg-primary/90")}
                   >
                     <a 
-                      href={tiktokLink} 
-                      target="_blank" 
+                      href={tiktokLink || "#"} 
+                      target={tiktokLink ? "_blank" : "_self"} 
                       rel="noopener noreferrer"
                       onClick={() => handleVisitSocial("socialTikTok")}
                     >
@@ -619,8 +635,8 @@ export default function MultiStepForm({
                     className={cn("w-full h-16 justify-between rounded-2xl text-lg shadow-sm border-2 cursor-pointer transition-all", values.socialInstagram ? "bg-background border-green-500 text-foreground" : "border-transparent bg-primary text-primary-foreground hover:bg-primary/90")}
                   >
                     <a 
-                      href={instagramLink} 
-                      target="_blank" 
+                      href={instagramLink || "#"} 
+                      target={instagramLink ? "_blank" : "_self"} 
                       rel="noopener noreferrer"
                       onClick={() => handleVisitSocial("socialInstagram")}
                     >
@@ -637,8 +653,8 @@ export default function MultiStepForm({
                     className={cn("w-full h-16 justify-between rounded-2xl text-lg shadow-sm border-2 cursor-pointer transition-all", values.socialYouTube ? "bg-background border-green-500 text-foreground" : "border-transparent bg-primary text-primary-foreground hover:bg-primary/90")}
                   >
                     <a 
-                      href={youtubeLink} 
-                      target="_blank" 
+                      href={youtubeLink || "#"} 
+                      target={youtubeLink ? "_blank" : "_self"} 
                       rel="noopener noreferrer"
                       onClick={() => handleVisitSocial("socialYouTube")}
                     >
@@ -655,8 +671,8 @@ export default function MultiStepForm({
                     className={cn("w-full h-16 justify-between rounded-2xl text-lg shadow-sm border-2 cursor-pointer transition-all", values.socialWhatsappChannel ? "bg-background border-green-500 text-foreground" : "border-transparent bg-primary text-primary-foreground hover:bg-primary/90")}
                   >
                     <a 
-                      href={whatsappChannelLink} 
-                      target="_blank" 
+                      href={whatsappChannelLink || "#"} 
+                      target={whatsappChannelLink ? "_blank" : "_self"} 
                       rel="noopener noreferrer"
                       onClick={() => handleVisitSocial("socialWhatsappChannel")}
                     >
