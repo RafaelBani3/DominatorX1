@@ -29,7 +29,7 @@ export default function OnboardingModal({ open, onOpenChange, settings = {} }) {
             Pendaftaran Member Baru
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            Lengkapi form di bawah ini untuk bergabung dengan Dominator XI.
+            Lengkapi form di bawah ini untuk bergabung dengan {settings.community_name || "Dominator XI"}.
           </DialogDescription>
         </DialogHeader>
 

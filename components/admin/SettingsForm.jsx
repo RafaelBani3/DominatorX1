@@ -14,12 +14,13 @@ export default function SettingsForm({ initialSettings }) {
   const [settings, setSettings] = useState({
     community_name: initialSettings.community_name || "Dominator XI",
     logo_url: initialSettings.logo_url || "",
-    tiktok_link: initialSettings.tiktok_link || "https://tiktok.com",
-    instagram_link: initialSettings.instagram_link || "https://instagram.com",
-    youtube_link: initialSettings.youtube_link || "https://youtube.com",
-    whatsapp_link: initialSettings.whatsapp_link || "",
-    disclaimer: initialSettings.disclaimer || "Saya memahami bahwa keputusan bergabung...",
-    join_requirements: initialSettings.join_requirements || "Wajib follow TikTok, IG, YT.",
+    tiktok_link: initialSettings.tiktok_link || "https://www.tiktok.com/@dominator_fcm/photo/7667739169640172821?is_from_webapp=1&sender_device=pc&web_id=7662197260352931345",
+    instagram_link: initialSettings.instagram_link || "https://www.instagram.com/p/DacuC5Ay7cp/",
+    youtube_link: initialSettings.youtube_link || "https://youtube.com/shorts/QXV6YR6T04U?feature=share",
+    whatsapp_channel_link: initialSettings.whatsapp_channel_link || "https://whatsapp.com/channel/0029Vb5aadbK5cD5YbbVP73Y",
+    whatsapp_link: initialSettings.whatsapp_link || "https://chat.whatsapp.com/FkZf7UL7HQ0E768p3eB2DM",
+    disclaimer: initialSettings.disclaimer || "Saya memahami bahwa keputusan bergabung ke komunitas ini merupakan keputusan pribadi saya. Apabila di kemudian hari terjadi kesalahpahaman dengan orang tua maupun wali, maka hal tersebut bukan menjadi tanggung jawab admin maupun komunitas.",
+    join_requirements: initialSettings.join_requirements || "Tunjukkan dukungan Anda dengan mengikuti kanal sosial media resmi kami.",
   });
   
   const [loading, setLoading] = useState(false);
@@ -87,6 +88,10 @@ export default function SettingsForm({ initialSettings }) {
                 <Input name="youtube_link" value={settings.youtube_link} onChange={handleChange} className="bg-black/20" />
               </div>
               <div className="space-y-2">
+                <Label>Link Saluran WhatsApp</Label>
+                <Input name="whatsapp_channel_link" value={settings.whatsapp_channel_link} onChange={handleChange} className="bg-black/20" />
+              </div>
+              <div className="space-y-2 md:col-span-2">
                 <Label>Link WhatsApp Group (Untuk yang lulus)</Label>
                 <Input name="whatsapp_link" value={settings.whatsapp_link} onChange={handleChange} className="bg-black/20" />
               </div>

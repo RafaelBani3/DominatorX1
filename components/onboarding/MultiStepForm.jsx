@@ -111,6 +111,15 @@ export default function MultiStepForm({
   
   const { toast } = useToast();
 
+  const tiktokLink = settings.tiktok_link || "https://www.tiktok.com/@dominator_fcm/photo/7667739169640172821?is_from_webapp=1&sender_device=pc&web_id=7662197260352931345";
+  const instagramLink = settings.instagram_link || "https://www.instagram.com/p/DacuC5Ay7cp/";
+  const youtubeLink = settings.youtube_link || "https://youtube.com/shorts/QXV6YR6T04U?feature=share";
+  const whatsappChannelLink = settings.whatsapp_channel_link || "https://whatsapp.com/channel/0029Vb5aadbK5cD5YbbVP73Y";
+  const whatsappGroupLink = settings.whatsapp_link || "https://chat.whatsapp.com/FkZf7UL7HQ0E768p3eB2DM";
+  const disclaimerText = settings.disclaimer || "Saya memahami bahwa keputusan bergabung ke komunitas ini merupakan keputusan pribadi saya. Apabila di kemudian hari terjadi kesalahpahaman dengan orang tua maupun wali, maka hal tersebut bukan menjadi tanggung jawab admin maupun komunitas.";
+  const joinRequirementsText = settings.join_requirements || "Tunjukkan dukungan Anda dengan mengikuti kanal sosial media resmi kami.";
+  const communityName = settings.community_name || "Dominator XI";
+
   const handleCancel = () => {
     if (onCancel) onCancel();
     else window.location.href = "/";
@@ -137,17 +146,17 @@ export default function MultiStepForm({
   // Instant rejection logic
   useEffect(() => {
     if (values.phoneOwner === "orang_tua") {
-      setRejectionReason("Mohon maaf. Saat ini Anda belum dapat bergabung ke komunitas Dominator XI karena alasan Parent Permission (Handphone milik orang tua). Terima kasih.");
+      setRejectionReason(`Mohon maaf. Saat ini Anda belum dapat bergabung ke komunitas ${communityName} karena alasan Parent Permission (Handphone milik orang tua). Terima kasih.`);
       submitOnboarding({ ...values, status: "rejected", reason: "Parent Permission - Not Owned" });
     }
-  }, [values.phoneOwner]);
+  }, [values.phoneOwner, communityName]);
 
   useEffect(() => {
     if (values.phoneChecked === "ya") {
-      setRejectionReason("Mohon maaf. Saat ini Anda belum dapat bergabung ke komunitas Dominator XI karena alasan Parent Permission (Handphone sering diperiksa orang tua). Terima kasih.");
+      setRejectionReason(`Mohon maaf. Saat ini Anda belum dapat bergabung ke komunitas ${communityName} karena alasan Parent Permission (Handphone sering diperiksa orang tua). Terima kasih.`);
       submitOnboarding({ ...values, status: "rejected", reason: "Parent Permission - Monitored" });
     }
-  }, [values.phoneChecked]);
+  }, [values.phoneChecked, communityName]);
 
   const handleNext = () => {
     if (currentStep === 1) {
@@ -269,7 +278,7 @@ export default function MultiStepForm({
           className="w-full cursor-pointer rounded-xl px-8 py-6 text-lg font-bold"
         >
           <a
-            href="https://chat.whatsapp.com/FkZf7UL7HQ0E768p3eB2DM"
+            href={whatsappGroupLink}
             target="_blank"
             rel="noreferrer"
           >
@@ -412,8 +421,7 @@ export default function MultiStepForm({
                   {values.phoneOwner === "sendiri" && values.phoneChecked === "terkadang" && (
                     <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-yellow-500/10 border border-yellow-500/20 p-5 rounded-2xl mt-4 text-yellow-800 dark:text-yellow-200">
                       <p className="text-sm mb-4 leading-relaxed font-medium">
-                        Saya memahami bahwa keputusan bergabung ke komunitas ini merupakan keputusan pribadi saya.
-                        Apabila di kemudian hari terjadi kesalahpahaman dengan orang tua maupun wali, maka hal tersebut bukan menjadi tanggung jawab admin maupun komunitas.
+                        {disclaimerText}
                       </p>
                       <Label htmlFor="warning" className="flex items-center space-x-3 cursor-pointer p-2 -ml-2 rounded-lg hover:bg-yellow-500/10 transition-colors">
                         <Checkbox 
@@ -514,7 +522,7 @@ export default function MultiStepForm({
           {currentStep === 4 && (
             <div className="space-y-8">
               <h3 className="text-3xl font-extrabold mb-3 text-foreground tracking-tight">Persyaratan Bergabung</h3>
-              <p className="text-muted-foreground text-md mb-8">Tunjukkan dukungan Anda dengan mengikuti kanal sosial media resmi kami.</p>
+              <p className="text-muted-foreground text-md mb-8">{joinRequirementsText}</p>
               
               <div className="space-y-5">
                 <motion.div whileHover={{ scale: 1.01 }}>
@@ -524,7 +532,7 @@ export default function MultiStepForm({
                     className={cn("w-full h-16 justify-between rounded-2xl text-lg shadow-sm border-2 cursor-pointer transition-all", values.socialTikTok ? "bg-background border-green-500 text-foreground" : "border-transparent bg-primary text-primary-foreground hover:bg-primary/90")}
                   >
                     <a 
-                      href="https://www.tiktok.com/@dominator_fcm/photo/7667739169640172821?is_from_webapp=1&sender_device=pc&web_id=7662197260352931345" 
+                      href={tiktokLink} 
                       target="_blank" 
                       rel="noopener noreferrer"
                       onClick={() => setValue("socialTikTok", true, { shouldValidate: true, shouldDirty: true })}
@@ -542,7 +550,7 @@ export default function MultiStepForm({
                     className={cn("w-full h-16 justify-between rounded-2xl text-lg shadow-sm border-2 cursor-pointer transition-all", values.socialInstagram ? "bg-background border-green-500 text-foreground" : "border-transparent bg-primary text-primary-foreground hover:bg-primary/90")}
                   >
                     <a 
-                      href="https://www.instagram.com/p/DacuC5Ay7cp/" 
+                      href={instagramLink} 
                       target="_blank" 
                       rel="noopener noreferrer"
                       onClick={() => setValue("socialInstagram", true, { shouldValidate: true, shouldDirty: true })}
@@ -560,7 +568,7 @@ export default function MultiStepForm({
                     className={cn("w-full h-16 justify-between rounded-2xl text-lg shadow-sm border-2 cursor-pointer transition-all", values.socialYouTube ? "bg-background border-green-500 text-foreground" : "border-transparent bg-primary text-primary-foreground hover:bg-primary/90")}
                   >
                     <a 
-                      href="https://youtube.com/shorts/QXV6YR6T04U?feature=share" 
+                      href={youtubeLink} 
                       target="_blank" 
                       rel="noopener noreferrer"
                       onClick={() => setValue("socialYouTube", true, { shouldValidate: true, shouldDirty: true })}
@@ -578,7 +586,7 @@ export default function MultiStepForm({
                     className={cn("w-full h-16 justify-between rounded-2xl text-lg shadow-sm border-2 cursor-pointer transition-all", values.socialWhatsappChannel ? "bg-background border-green-500 text-foreground" : "border-transparent bg-primary text-primary-foreground hover:bg-primary/90")}
                   >
                     <a 
-                      href="https://whatsapp.com/channel/0029Vb5aadbK5cD5YbbVP73Y" 
+                      href={whatsappChannelLink} 
                       target="_blank" 
                       rel="noopener noreferrer"
                       onClick={() => setValue("socialWhatsappChannel", true, { shouldValidate: true, shouldDirty: true })}
