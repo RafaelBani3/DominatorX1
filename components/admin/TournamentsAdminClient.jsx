@@ -15,13 +15,6 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import {
   createTournament,
@@ -194,20 +187,28 @@ export default function TournamentsAdminClient({ initialTournaments = [] }) {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label>Tipe Bracket</Label>
-                <Select
-                  value={form.bracketType}
-                  onValueChange={(val) =>
-                    setForm((f) => ({ ...f, bracketType: val }))
-                  }
-                >
-                  <SelectTrigger className="h-11 rounded-2xl">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="single">Single Elim</SelectItem>
-                    <SelectItem value="double">Double Elim</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="grid grid-cols-2 gap-1 rounded-2xl border border-input bg-transparent p-1">
+                  {[
+                    { value: "single", label: "Single" },
+                    { value: "double", label: "Double" },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() =>
+                        setForm((f) => ({ ...f, bracketType: opt.value }))
+                      }
+                      className={cn(
+                        "h-9 rounded-xl text-sm font-medium transition-colors",
+                        form.bracketType === opt.value
+                          ? "bg-[#7C5CFC] text-white"
+                          : "text-[#5C6578] hover:bg-[#F3F0FF]"
+                      )}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
               </div>
               <div className="space-y-2">
                 <Label>Max Peserta</Label>

@@ -518,11 +518,15 @@ export default function MemberList() {
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-[#4E5669]">Status Member</label>
-              <Select value={createForm.status} onValueChange={val => setCreateForm({...createForm, status: val})}>
+              <Select
+                modal={false}
+                value={createForm.status}
+                onValueChange={(val) => setCreateForm({ ...createForm, status: val })}
+              >
                 <SelectTrigger className="h-10 bg-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent alignItemWithTrigger={false}>
                   <SelectItem value="accepted">Accepted (Diterima)</SelectItem>
                   <SelectItem value="pending">Pending (Menunggu)</SelectItem>
                   <SelectItem value="rejected">Rejected (Ditolak)</SelectItem>
