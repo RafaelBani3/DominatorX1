@@ -37,9 +37,9 @@ function isPortaledOverlayTarget(target) {
   )
 }
 
-const DialogContent = React.forwardRef(({ className, children, onInteractOutside, onFocusOutside, onPointerDownOutside, ...props }, ref) => (
+const DialogContent = React.forwardRef(({ className, children, overlayClassName, onInteractOutside, onFocusOutside, onPointerDownOutside, ...props }, ref) => (
   <DialogPortal>
-    <DialogOverlay />
+    <DialogOverlay className={overlayClassName} />
     <DialogPrimitive.Content
       ref={ref}
       className={cn(

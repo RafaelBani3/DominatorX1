@@ -65,7 +65,10 @@ export default function LandingShell({
         onOpenChange={handleOpenChange}
         settings={settings}
       />
-      <TournamentPromoModal tournaments={tournaments} />
+      <TournamentPromoModal
+        tournaments={tournaments}
+        blocked={open}
+      />
     </div>
   );
 }
