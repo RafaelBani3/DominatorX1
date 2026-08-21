@@ -18,6 +18,7 @@ import {
   X,
   Trophy,
   ClipboardList,
+  Swords,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { authClient } from "@/lib/auth-client";
@@ -28,6 +29,7 @@ const NAV_ITEMS = [
   { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
   { name: "Members", href: "/admin/members", icon: Users },
   { name: "Admins", href: "/admin/users", icon: ShieldAlert },
+  { name: "Tournaments", href: "/admin/tournaments", icon: Swords },
   { name: "Top Players", href: "/admin/top-players", icon: Trophy },
   { name: "Manager Tactics", href: "/admin/tactics", icon: ClipboardList },
   { name: "Settings", href: "/admin/settings", icon: Settings },

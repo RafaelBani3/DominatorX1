@@ -6,8 +6,13 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Hero from "@/components/landing/Hero";
 import Navbar from "@/components/landing/Navbar";
 import OnboardingModal from "@/components/onboarding/OnboardingModal";
+import TournamentSection from "@/components/landing/TournamentSection";
+import TournamentPromoModal from "@/components/landing/TournamentPromoModal";
 
-export default function LandingShell({ settings = {} }) {
+export default function LandingShell({
+  settings = {},
+  tournaments = [],
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -53,12 +58,14 @@ export default function LandingShell({ settings = {} }) {
       <Navbar onJoin={openJoin} />
       <main className="flex-1">
         <Hero onJoin={openJoin} />
+        <TournamentSection tournaments={tournaments} />
       </main>
       <OnboardingModal
         open={open}
         onOpenChange={handleOpenChange}
         settings={settings}
       />
+      <TournamentPromoModal tournaments={tournaments} />
     </div>
   );
 }

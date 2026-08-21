@@ -164,3 +164,72 @@ model Tactic {
 
   @@map("tactics")
 }
+
+// -------------------------------------
+// Tournament Bracket
+// -------------------------------------
+
+model Tournament {
+  id              String   @id @default(uuid())
+  name            String
+  description     String?
+  bracketType     String   @default("single") // single | double
+  status          String   @default("draft") // draft | open | closed | match | finished
+  maxParticipants Int      @default(16)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  entries TournamentEntry[]
+  matches TournamentMatch[]
+
+  @@map("tournaments")
+}
+
+model TournamentEntry {
+  id           String  @id @default(uuid())
+  tournamentId String
+  nickname     String
+  phoneNumber  String
+  displayName  String?
+  seed         Int?
+
+  tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  asPlayer1 TournamentMatch[] @relation("MatchPlayer1")
+  asPlayer2 TournamentMatch[] @relation("MatchPlayer2")
+  asWinner  TournamentMatch[] @relation("MatchWinner")
+
+  createdAt DateTime @default(now())
+
+  @@unique([tournamentId, phoneNumber])
+  @@unique([tournamentId, nickname])
+  @@map("tournament_entries")
+}
+
+model TournamentMatch {
+  id             String  @id @default(uuid())
+  tournamentId   String
+  round          Int
+  bracketSide    String  @default("winners") // winners | losers | final
+  matchIndex     Int
+  player1EntryId String?
+  player2EntryId String?
+  winnerEntryId  String?
+  nextMatchId    String?
+  nextSlot       Int? // 1 | 2
+  loserNextMatchId String?
+  loserNextSlot    Int?
+  status         String  @default("pending") // pending | ready | done
+
+  tournament Tournament       @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  player1    TournamentEntry? @relation("MatchPlayer1", fields: [player1EntryId], references: [id], onDelete: SetNull)
+  player2    TournamentEntry? @relation("MatchPlayer2", fields: [player2EntryId], references: [id], onDelete: SetNull)
+  winner     TournamentEntry? @relation("MatchWinner", fields: [winnerEntryId], references: [id], onDelete: SetNull)
+  nextMatch  TournamentMatch? @relation("MatchToNext", fields: [nextMatchId], references: [id], onDelete: SetNull)
+  fromMatches TournamentMatch[] @relation("MatchToNext")
+  loserNextMatch TournamentMatch? @relation("LoserToNext", fields: [loserNextMatchId], references: [id], onDelete: SetNull)
+  fromLoserMatches TournamentMatch[] @relation("LoserToNext")
+
+  @@index([tournamentId, bracketSide, round])
+  @@map("tournament_matches")
+}
