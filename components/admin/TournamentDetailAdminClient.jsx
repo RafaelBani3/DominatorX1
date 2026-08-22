@@ -8,6 +8,7 @@ import {
   Trash2,
   RotateCcw,
   Users,
+  Trophy,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -22,11 +23,11 @@ import {
 import { cn } from "@/lib/utils";
 
 const STATUS_STYLE = {
-  draft: "bg-slate-100 text-slate-600",
-  open: "bg-emerald-100 text-emerald-700",
-  closed: "bg-amber-100 text-amber-700",
-  match: "bg-violet-100 text-violet-700",
-  finished: "bg-sky-100 text-sky-700",
+  draft: "bg-slate-500/20 text-slate-200 ring-slate-400/25",
+  open: "bg-emerald-500/20 text-emerald-200 ring-emerald-400/30",
+  closed: "bg-amber-500/20 text-amber-100 ring-amber-400/30",
+  match: "bg-violet-500/20 text-violet-200 ring-violet-400/30",
+  finished: "bg-sky-500/20 text-sky-200 ring-sky-400/30",
 };
 
 const NEXT_LABEL = {
@@ -69,24 +70,29 @@ export default function TournamentDetailAdminClient({ tournament: initial }) {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[1.75rem] border border-white bg-white p-6 shadow-[0_12px_40px_rgba(124,92,252,0.08)]">
-        <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="relative overflow-hidden rounded-[1.75rem] border border-[#2A2448] bg-gradient-to-br from-[#1B1535] to-[#12101F] p-6 text-white shadow-[0_16px_40px_rgba(40,30,90,0.25)]">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-[#7C5CFC]/25 blur-3xl"
+        />
+        <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
             <span
               className={cn(
-                "inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide",
+                "inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ring-1",
                 STATUS_STYLE[tournament.status]
               )}
             >
               {tournament.status}
             </span>
-            <h1 className="mt-3 text-2xl font-bold text-[#1F2430]">
+            <h1 className="mt-3 flex items-center gap-2 text-2xl font-bold text-white">
+              <Trophy className="h-6 w-6 text-[#A78BFA]" />
               {tournament.name}
             </h1>
-            <p className="mt-1 max-w-2xl text-sm text-[#8A93A6]">
+            <p className="mt-1 max-w-2xl text-sm text-white/55">
               {tournament.description || "Tanpa deskripsi"} ·{" "}
-              <span className="capitalize">{tournament.bracketType}</span> elimination ·
-              max {tournament.maxParticipants} peserta
+              <span className="capitalize">{tournament.bracketType}</span>{" "}
+              elimination · max {tournament.maxParticipants} peserta
             </p>
           </div>
 
@@ -98,7 +104,13 @@ export default function TournamentDetailAdminClient({ tournament: initial }) {
                 onClick={() =>
                   run(
                     () => advanceTournamentStatus(tournament.id),
-                    `Status → ${tournament.status === "draft" ? "open" : tournament.status === "open" ? "closed" : "finished"}`
+                    `Status → ${
+                      tournament.status === "draft"
+                        ? "open"
+                        : tournament.status === "open"
+                          ? "closed"
+                          : "finished"
+                    }`
                   )
                 }
               >
@@ -110,7 +122,7 @@ export default function TournamentDetailAdminClient({ tournament: initial }) {
             {tournament.status === "closed" ? (
               <Button
                 disabled={pending}
-                className="h-10 rounded-2xl bg-violet-600 text-white hover:bg-violet-700"
+                className="h-10 rounded-2xl bg-emerald-500 text-[#062012] hover:bg-emerald-400"
                 onClick={() =>
                   run(
                     () => generateTournamentBracket(tournament.id),
@@ -128,10 +140,13 @@ export default function TournamentDetailAdminClient({ tournament: initial }) {
               <Button
                 variant="outline"
                 disabled={pending}
-                className="h-10 rounded-2xl"
+                className="h-10 rounded-2xl border-white/15 bg-transparent text-white/75 hover:bg-white/5 hover:text-white"
                 onClick={() => {
                   if (!confirm("Reset bracket? Status kembali ke closed.")) return;
-                  run(() => resetTournamentBracket(tournament.id), "Bracket di-reset");
+                  run(
+                    () => resetTournamentBracket(tournament.id),
+                    "Bracket di-reset"
+                  );
                 }}
               >
                 <RotateCcw className="mr-2 h-4 w-4" />
@@ -143,30 +158,30 @@ export default function TournamentDetailAdminClient({ tournament: initial }) {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[320px_1fr]">
-        <div className="rounded-[1.75rem] border border-white bg-white p-5 shadow-[0_12px_40px_rgba(124,92,252,0.08)]">
+        <div className="rounded-[1.75rem] border border-[#2A2448] bg-gradient-to-b from-[#1B1535] to-[#12101F] p-5 text-white shadow-[0_16px_40px_rgba(40,30,90,0.2)]">
           <div className="mb-4 flex items-center gap-2">
-            <Users className="h-4 w-4 text-[#7C5CFC]" />
-            <h2 className="font-bold text-[#1F2430]">
+            <Users className="h-4 w-4 text-[#A78BFA]" />
+            <h2 className="font-bold text-white">
               Peserta ({tournament.entries?.length || 0})
             </h2>
           </div>
-          <div className="max-h-[480px] space-y-2 overflow-y-auto">
+          <div className="max-h-[480px] space-y-2 overflow-y-auto pr-1">
             {(tournament.entries || []).map((e, idx) => (
               <div
                 key={e.id}
-                className="flex items-center justify-between rounded-2xl bg-[#F7F8FC] px-3 py-2.5"
+                className="flex items-center justify-between rounded-2xl border border-white/5 bg-white/5 px-3 py-2.5"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-[#1F2430]">
+                  <p className="truncate text-sm font-semibold text-white">
                     {idx + 1}. {e.nickname}
                   </p>
-                  <p className="truncate text-xs text-[#8A93A6]">{e.phoneNumber}</p>
+                  <p className="truncate text-xs text-white/45">{e.phoneNumber}</p>
                 </div>
                 {["draft", "open", "closed"].includes(tournament.status) ? (
                   <Button
                     size="icon"
                     variant="ghost"
-                    className="h-8 w-8 text-rose-500"
+                    className="h-8 w-8 text-rose-300 hover:bg-rose-500/15 hover:text-rose-200"
                     disabled={pending}
                     onClick={() =>
                       run(
@@ -181,15 +196,22 @@ export default function TournamentDetailAdminClient({ tournament: initial }) {
               </div>
             ))}
             {!tournament.entries?.length ? (
-              <p className="py-8 text-center text-sm text-[#8A93A6]">
+              <p className="py-8 text-center text-sm text-white/40">
                 Belum ada peserta.
               </p>
             ) : null}
           </div>
         </div>
 
-        <div className="rounded-[1.75rem] border border-white bg-white p-5 shadow-[0_12px_40px_rgba(124,92,252,0.08)]">
-          <h2 className="mb-4 font-bold text-[#1F2430]">Bracket</h2>
+        <div className="rounded-[1.75rem] border border-[#1F2A38] bg-gradient-to-br from-[#0F1720] to-[#0B1218] p-5 shadow-[0_16px_40px_rgba(0,0,0,0.2)]">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <h2 className="font-bold text-white">Bracket</h2>
+            {tournament.status === "match" ? (
+              <span className="rounded-full bg-emerald-400/15 px-2.5 py-1 text-[11px] font-semibold text-emerald-300 ring-1 ring-emerald-400/25">
+                Klik pemenang untuk advance
+              </span>
+            ) : null}
+          </div>
           <TournamentBracketView
             matches={tournament.matches || []}
             bracketType={tournament.bracketType}

@@ -21,56 +21,69 @@ function MatchCard({
     onPickWinner?.(match.id, entryId);
   };
 
+  const slotClass = (isWinner, canPick) =>
+    cn(
+      "flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm transition",
+      isWinner
+        ? "bg-emerald-500/20 font-semibold text-emerald-200 ring-1 ring-emerald-400/30"
+        : "text-white/85 hover:bg-white/5",
+      canPick ? "cursor-pointer" : "cursor-default"
+    );
+
   return (
     <div
       className={cn(
-        "min-w-[180px] rounded-2xl border bg-white p-2 shadow-sm",
-        ready ? "border-[#7C5CFC]/40" : "border-[#E8ECF4]"
+        "min-w-[190px] overflow-hidden rounded-2xl border bg-gradient-to-b from-[#1A2838] to-[#121C28] p-1.5 shadow-[0_12px_28px_rgba(0,0,0,0.35)]",
+        ready
+          ? "border-emerald-400/40 shadow-[0_0_0_1px_rgba(52,211,153,0.15),0_12px_28px_rgba(0,0,0,0.35)]"
+          : done
+            ? "border-white/10"
+            : "border-white/8"
       )}
     >
       <button
         type="button"
         disabled={!interactive || !ready || !match.player1EntryId || pending}
         onClick={() => pick(match.player1EntryId)}
-        className={cn(
-          "flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm transition",
-          match.winnerEntryId === match.player1EntryId
-            ? "bg-emerald-50 font-semibold text-emerald-700"
-            : "hover:bg-[#F7F8FC]",
-          interactive && ready && match.player1EntryId ? "cursor-pointer" : "cursor-default"
+        className={slotClass(
+          match.winnerEntryId === match.player1EntryId,
+          interactive && ready && match.player1EntryId
         )}
       >
         <span className="truncate">{labelFor(match.player1)}</span>
         {match.winnerEntryId === match.player1EntryId ? (
-          <span className="text-[10px] uppercase">W</span>
+          <span className="rounded-md bg-emerald-400/20 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-emerald-300 uppercase">
+            W
+          </span>
         ) : null}
       </button>
-      <div className="my-1 h-px bg-[#EEF1F7]" />
+      <div className="mx-2 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
       <button
         type="button"
         disabled={!interactive || !ready || !match.player2EntryId || pending}
         onClick={() => pick(match.player2EntryId)}
-        className={cn(
-          "flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm transition",
-          match.winnerEntryId === match.player2EntryId
-            ? "bg-emerald-50 font-semibold text-emerald-700"
-            : "hover:bg-[#F7F8FC]",
-          interactive && ready && match.player2EntryId ? "cursor-pointer" : "cursor-default"
+        className={slotClass(
+          match.winnerEntryId === match.player2EntryId,
+          interactive && ready && match.player2EntryId
         )}
       >
         <span className="truncate">{labelFor(match.player2)}</span>
         {match.winnerEntryId === match.player2EntryId ? (
-          <span className="text-[10px] uppercase">W</span>
+          <span className="rounded-md bg-emerald-400/20 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-emerald-300 uppercase">
+            W
+          </span>
         ) : null}
       </button>
       {done ? (
-        <p className="mt-1 text-center text-[10px] font-medium text-[#8A93A6]">Selesai</p>
+        <p className="mt-1 pb-1 text-center text-[10px] font-medium text-white/40">
+          Selesai
+        </p>
       ) : ready ? (
-        <p className="mt-1 text-center text-[10px] font-medium text-[#7C5CFC]">
+        <p className="mt-1 pb-1 text-center text-[10px] font-semibold text-emerald-300/90">
           {interactive ? "Klik pemenang" : "Siap digelar"}
         </p>
       ) : (
-        <p className="mt-1 text-center text-[10px] text-[#A0A8B8]">Menunggu</p>
+        <p className="mt-1 pb-1 text-center text-[10px] text-white/30">Menunggu</p>
       )}
     </div>
   );
@@ -79,8 +92,8 @@ function MatchCard({
 function BracketColumn({ title, matches, interactive, onPickWinner, pending }) {
   if (!matches.length) return null;
   return (
-    <div className="flex min-w-[200px] flex-col gap-4">
-      <p className="text-center text-xs font-bold tracking-wide text-[#8A93A6] uppercase">
+    <div className="flex min-w-[210px] flex-col gap-4">
+      <p className="text-center text-[11px] font-bold tracking-[0.14em] text-emerald-300/70 uppercase">
         {title}
       </p>
       <div className="flex flex-1 flex-col justify-around gap-6">
@@ -107,7 +120,7 @@ export default function TournamentBracketView({
 }) {
   if (!matches.length) {
     return (
-      <div className="rounded-3xl border border-dashed border-[#D9DEEA] bg-white/80 p-10 text-center text-sm text-[#8A93A6]">
+      <div className="rounded-3xl border border-dashed border-white/15 bg-[#0F1720]/80 p-10 text-center text-sm text-white/45">
         Bracket belum digenerate.
       </div>
     );
@@ -125,9 +138,9 @@ export default function TournamentBracketView({
   );
 
   return (
-    <div className="space-y-8 overflow-x-auto pb-2">
+    <div className="space-y-10 overflow-x-auto pb-2">
       <div>
-        <p className="mb-3 text-sm font-bold text-[#1F2430]">
+        <p className="mb-4 text-sm font-bold tracking-wide text-white">
           {bracketType === "double" ? "Winners Bracket" : "Bracket"}
         </p>
         <div className="flex gap-8">
@@ -152,7 +165,9 @@ export default function TournamentBracketView({
 
       {bracketType === "double" && loserRounds.length ? (
         <div>
-          <p className="mb-3 text-sm font-bold text-[#1F2430]">Losers Bracket</p>
+          <p className="mb-4 text-sm font-bold tracking-wide text-white">
+            Losers Bracket
+          </p>
           <div className="flex gap-8">
             {loserRounds.map((round) => (
               <BracketColumn
@@ -170,7 +185,9 @@ export default function TournamentBracketView({
 
       {finals.length ? (
         <div>
-          <p className="mb-3 text-sm font-bold text-[#1F2430]">Grand Final</p>
+          <p className="mb-4 text-sm font-bold tracking-wide text-white">
+            Grand Final
+          </p>
           <div className="flex gap-8">
             <BracketColumn
               title="Grand Final"
